@@ -347,12 +347,13 @@ export function QueueProvider({ children }) {
   }, [])
 
   const getPatientView = useCallback((patientId) => {
+    const hrn = patientId.toUpperCase()
     for (const [doctorId, queue] of Object.entries(queues)) {
-      const patient = queue.find(p => p.id === patientId)
+      const patient = queue.find(p => p.id === patientId || p.hrn === hrn)
       if (patient) {
         return { ...patient, doctorId, queueLength: queue.length }
       }
-      if (serving[doctorId]?.id === patientId) {
+      if (serving[doctorId]?.id === patientId || serving[doctorId]?.hrn === hrn) {
         return { ...serving[doctorId], doctorId, status: 'serving', queueLength: queue.length }
       }
     }

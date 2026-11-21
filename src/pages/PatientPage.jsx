@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQueue } from '../context/QueueContext'
+import { registerPush } from '../lib/push'
 
 export default function PatientPage() {
   const { doctors, getPatientView, savePatientProfile } = useQueue()
@@ -25,7 +26,10 @@ export default function PatientPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (patientId.trim()) setSearched(true)
+    if (patientId.trim()) {
+      setSearched(true)
+      registerPush(patientId.trim().toUpperCase(), 'patient')
+    }
   }
 
   const handleSaveContact = async (e) => {

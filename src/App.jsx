@@ -6,6 +6,7 @@ import StaffPage from './pages/StaffPage'
 import DoctorPage from './pages/DoctorPage'
 import PatientPage from './pages/PatientPage'
 import QueueListPage from './pages/QueueListPage'
+import { registerPush, onPushMessage } from './lib/push'
 import './App.css'
 
 const STORAGE_KEY = 'clinic-queue-user'
@@ -25,6 +26,21 @@ function AppRoutes() {
       }
     }
     setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!user) return
+    const id = user.role === 'doctor' ? `doctor:${user.doctorId}` : 'staff'
+    if (user.role === 'staff' || user.role === 'doctor') {
+      registerPush(id, user.role)
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!('Notification' in window)) return
+    return onPushMessage(({ title, body, icon, image, data }) => {
+      new Notification(title, { body, icon, image, data })
+    })
   }, [])
 
   const login = (role, doctorId) => {
