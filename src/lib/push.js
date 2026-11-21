@@ -38,12 +38,12 @@ export async function registerPush(identifier, role) {
     })
 
     if (token) {
-      await setDoc(doc(db, 'fcmTokens', identifier), {
+      await setDoc(doc(db, 'fcmTokens', identifier, 'devices', token), {
         token,
         role,
         identifier,
         updatedAt: serverTimestamp()
-      }, { merge: true })
+      })
     }
 
     return token

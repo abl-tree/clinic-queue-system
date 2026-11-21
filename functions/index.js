@@ -13,20 +13,26 @@ function patientTitle(doctorName) {
 
 async function notifyPatient(hrn, title, body, data = {}) {
   if (!hrn) return
-  const tokenSnap = await db.collection('fcmTokens').doc(hrn).get()
-  if (!tokenSnap.exists) {
-    console.log(`No FCM token for patient ${hrn}`)
+  const devicesSnap = await db.collection('fcmTokens').doc(hrn).collection('devices').get()
+  if (devicesSnap.empty) {
+    console.log(`No FCM tokens for patient ${hrn}`)
     return
   }
-  const token = tokenSnap.data().token
-  await messaging.send({
-    token,
+
+  const tokens = devicesSnap.docs.map(d => d.data().token).filter(Boolean)
+  if (tokens.length === 0) {
+    console.log(`No FCM tokens for patient ${hrn}`)
+    return
+  }
+
+  await messaging.sendEachForMulticast({
+    tokens,
     notification: { title, body },
     data: { ...data, hrn },
     android: { priority: 'high' },
     apns: { payload: { aps: { sound: 'default' } } }
   })
-  console.log(`Push sent to ${hrn}: ${title}`)
+  console.log(`Push sent to ${tokens.length} device(s) for ${hrn}: ${title}`)
 }
 
 exports.notifyPatientQueued = onDocumentCreated(
