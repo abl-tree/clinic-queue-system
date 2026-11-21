@@ -1,0 +1,93 @@
+import { useParams } from 'react-router-dom'
+import { useQueue } from '../context/QueueContext'
+
+export default function DoctorPage() {
+  const { doctorId } = useParams()
+  const { doctors, queues, serving, serveNext, skipPatient, donePatient } = useQueue()
+  const doctor = doctors.find(d => d.id === doctorId)
+  const queue = queues[doctorId] || []
+  const currentServing = serving[doctorId]
+
+  if (!doctor) return <div className="page">Doctor not found</div>
+
+  return (
+    <div className="page doctor-page">
+      <header className="page-header">
+        <div>
+          <h1>{doctor.name}</h1>
+          <span className="specialty">{doctor.specialty}</span>
+        </div>
+      </header>
+
+      {currentServing && (
+        <section className="serving-window">
+          <div className="serving-badge">NOW SERVING</div>
+          <div className="serving-patient-info">
+            <span className="patient-name">
+              {currentServing.name ? currentServing.name : 'Patient'}
+            </span>
+            {currentServing.hrn && (
+              <span className="patient-hrn">HRN: {currentServing.hrn}</span>
+            )}
+            {currentServing.contact && (
+              <span className="patient-contact">{currentServing.contact}</span>
+            )}
+            {currentServing.reason && (
+              <span className="patient-reason">{currentServing.reason}</span>
+            )}
+          </div>
+          <div className="serving-actions">
+            <button
+              type="button"
+              onClick={() => skipPatient(doctorId)}
+              className="btn btn-danger btn-sm"
+            >
+              Skip
+            </button>
+            <button
+              type="button"
+              onClick={() => donePatient(doctorId)}
+              className="btn btn-primary btn-sm"
+            >
+              Done
+            </button>
+          </div>
+        </section>
+      )}
+
+      <section className="card queue-card">
+        <div className="queue-header">
+          <h2>Waiting Queue ({queue.length})</h2>
+          {!currentServing && (
+            <button
+              onClick={() => serveNext(doctorId)}
+              disabled={queue.length === 0}
+              className="btn btn-primary"
+            >
+              {queue.length > 0 ? 'Start' : 'No Patients'}
+            </button>
+          )}
+        </div>
+        <div className="queue-list">
+          {queue.length === 0 ? (
+            <p className="empty">No patients waiting</p>
+          ) : (
+            queue.sort((a, b) => (a.queueNumber || 0) - (b.queueNumber || 0)).map((patient, index) => (
+              <div key={patient.id} className="queue-item">
+                <span className="queue-number">#{patient.queueNumber !== undefined ? patient.queueNumber : index + 1}</span>
+                <div className="patient-info">
+                  <span className="patient-name">{patient.name ? `${patient.name} (HRN: ${patient.hrn})` : `HRN: ${patient.hrn}`}</span>
+                  <span className="patient-meta">
+                    {patient.contact && `${patient.contact}`}
+                    {patient.reason && ` | ${patient.reason}`}
+                  </span>
+                </div>
+                <span className="time">{patient.timestamp}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+    </div>
+  )
+}
