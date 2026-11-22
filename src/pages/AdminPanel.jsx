@@ -66,7 +66,7 @@ export default function AdminPanel() {
     if (staffs.length > 0) {
       const initial = {}
       staffs.forEach(s => {
-        initial[s.id] = { name: s.name || '', role: s.role || 'Staff', username: s.username || '' }
+        initial[s.id] = { name: s.name || '', role: s.role || 'Staff' }
       })
       setStaffEdits(initial)
     }
@@ -179,7 +179,7 @@ export default function AdminPanel() {
   const saveStaffEdit = async (id) => {
     const edit = staffEdits[id]
     try {
-      await updateStaff(id, { name: capitalize(edit.name), role: edit.role, username: edit.username.trim() })
+      await updateStaff(id, { name: capitalize(edit.name), role: edit.role })
       setStaffEditingId(null)
       showToast('Staff updated')
     } catch (err) {
@@ -192,13 +192,12 @@ export default function AdminPanel() {
     const form = new FormData(e.target)
     const name = form.get('name').trim()
     const role = form.get('role').trim()
-    const username = form.get('username').trim()
-    if (!name || !username) {
-      showToast('Name and username are required')
+    if (!name) {
+      showToast('Name is required')
       return
     }
     try {
-      await addStaff({ name, role: role || 'Staff', username })
+      await addStaff({ name, role: role || 'Staff' })
       setShowAddStaff(false)
       showToast('Staff added')
     } catch (err) {
@@ -379,7 +378,6 @@ export default function AdminPanel() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 220 }}>
                       <span style={{ fontWeight: 600 }}>{staff.name}</span>
                       <span style={{ fontSize: 13, color: '#64748b' }}>{staff.role}</span>
-                      <span style={{ fontSize: 12, color: '#94a3b8' }}>Username: {staff.username}</span>
                       <span style={{ fontSize: 12, color: '#94a3b8' }}>ID: {staff.id}</span>
                     </div>
 
@@ -399,12 +397,6 @@ export default function AdminPanel() {
                           <option value="Staff">Staff</option>
                           <option value="Nurse">Nurse</option>
                         </select>
-                        <input
-                          value={edit.username}
-                          onChange={(e) => handleStaffEditChange(staff.id, 'username', e.target.value)}
-                          placeholder="Username"
-                          style={{ padding: 8, fontSize: 13, minWidth: 120 }}
-                        />
                         <button type="submit" className="btn btn-primary btn-sm">Save</button>
                         <button type="button" onClick={cancelStaffEdit} className="btn btn-ghost btn-sm">Cancel</button>
                       </form>
@@ -517,11 +509,6 @@ export default function AdminPanel() {
                     <option value="Staff">Staff</option>
                     <option value="Nurse">Nurse</option>
                   </select>
-                </div>
-
-                <div className="modal-form-group">
-                  <label>Username</label>
-                  <input name="username" placeholder="e.g. jsmith" required />
                 </div>
 
                 <div className="modal-actions">

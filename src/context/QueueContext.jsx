@@ -184,6 +184,22 @@ export function QueueProvider({ children }) {
     }
   }, [])
 
+  const changeStaffPassword = useCallback(async (staffId, password) => {
+    try {
+      const encryptedPassword = password ? await encrypt(password) : undefined
+      const staffRef = doc(db, 'staffs', staffId)
+      await updateDoc(staffRef, {
+        password: encryptedPassword,
+        passwordUpdatedAt: serverTimestamp(),
+        mustChangePassword: false,
+        updatedAt: serverTimestamp()
+      })
+    } catch (err) {
+      console.error('Error changing staff password:', err)
+      throw err
+    }
+  }, [])
+
   const deleteDoctor = useCallback(async (doctorId) => {
     try {
       const doctorRef = doc(db, 'doctors', doctorId)
@@ -196,17 +212,14 @@ export function QueueProvider({ children }) {
 
   const addStaff = useCallback(async (staffData) => {
     try {
-      const { name, role, username, password } = staffData
-      const encryptedPassword = await encrypt(password || 'staff1234')
+      const { name, role } = staffData
+      const encryptedPassword = await encrypt('staff1234')
       const staffsRef = collection(db, 'staffs')
-      const q = query(staffsRef, where('username', '==', username))
-      const snapshot = await getDocs(q)
-      if (!snapshot.empty) throw new Error('Staff username already exists')
       await addDoc(staffsRef, {
         name,
         role,
-        username,
         password: encryptedPassword,
+        mustChangePassword: true,
         createdAt: serverTimestamp()
       })
     } catch (err) {
@@ -568,6 +581,7 @@ export function QueueProvider({ children }) {
     updateDoctor,
     resetDoctorPassword,
     changeDoctorPassword,
+    changeStaffPassword,
     deleteDoctor,
     addStaff,
     updateStaff,

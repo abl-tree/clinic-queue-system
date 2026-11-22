@@ -3,14 +3,17 @@ import { useQueue } from '../context/QueueContext'
 import { decrypt } from '../lib/crypto'
 
 export default function LoginPage({ onLogin }) {
-  const { doctors, changeDoctorPassword } = useQueue()
+  const { doctors, staffs, changeDoctorPassword, changeStaffPassword } = useQueue()
   const [role, setRole] = useState('')
   const [doctorId, setDoctorId] = useState('')
+  const [staffId, setStaffId] = useState('')
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [showDoctorModal, setShowDoctorModal] = useState(false)
+  const [showStaffModal, setShowStaffModal] = useState(false)
   const [showChangePassword, setShowChangePassword] = useState(false)
-  const [changeDoctorId, setChangeDoctorId] = useState('')
+  const [changeType, setChangeType] = useState('')
+  const [changeId, setChangeId] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [changeError, setChangeError] = useState('')
@@ -33,7 +36,8 @@ export default function LoginPage({ onLogin }) {
       return
     }
     if (doctor.mustChangePassword) {
-      setChangeDoctorId(doctor.id)
+      setChangeId(doctor.id)
+      setChangeType('doctor')
       setShowDoctorModal(false)
       setShowChangePassword(true)
       setPassword('')
@@ -49,6 +53,41 @@ export default function LoginPage({ onLogin }) {
     setDoctorId('')
   }
 
+  const handleStaffLogin = async () => {
+    setLoginError('')
+    const staff = staffs.find(s => s.id === staffId)
+    if (!staff || !staff.password) {
+      setLoginError('Invalid staff selection')
+      return
+    }
+    try {
+      const storedPassword = await decrypt(staff.password)
+      if (storedPassword !== password) {
+        setLoginError('Invalid staff password')
+        return
+      }
+    } catch {
+      setLoginError('Invalid staff password')
+      return
+    }
+    if (staff.mustChangePassword) {
+      setChangeId(staff.id)
+      setChangeType('staff')
+      setShowStaffModal(false)
+      setShowChangePassword(true)
+      setPassword('')
+      setStaffId('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setChangeError('')
+      return
+    }
+    onLogin('staff', staff.id)
+    setShowStaffModal(false)
+    setPassword('')
+    setStaffId('')
+  }
+
   const handleChangePassword = () => {
     setChangeError('')
     if (!newPassword || !confirmPassword) {
@@ -59,29 +98,46 @@ export default function LoginPage({ onLogin }) {
       setChangeError('Passwords do not match')
       return
     }
-    changeDoctorPassword(changeDoctorId, newPassword.trim().toLowerCase().replace(/\s+/g, ''))
-      .then(() => {
-        setShowChangePassword(false)
-        setNewPassword('')
-        setConfirmPassword('')
-        onLogin('doctor', changeDoctorId)
-      })
-      .catch(() => setChangeError('Failed to change password'))
+    const cleanPassword = newPassword.trim().toLowerCase().replace(/\s+/g, '')
+    if (changeType === 'doctor') {
+      changeDoctorPassword(changeId, cleanPassword)
+        .then(() => {
+          setShowChangePassword(false)
+          setNewPassword('')
+          setConfirmPassword('')
+          onLogin('doctor', changeId)
+        })
+        .catch(() => setChangeError('Failed to change password'))
+    } else if (changeType === 'staff') {
+      changeStaffPassword(changeId, cleanPassword)
+        .then(() => {
+          setShowChangePassword(false)
+          setNewPassword('')
+          setConfirmPassword('')
+          onLogin('staff', changeId)
+        })
+        .catch(() => setChangeError('Failed to change password'))
+    }
   }
 
   const handleRoleSelect = (selectedRole) => {
     setRole(selectedRole)
     setPassword('')
     setDoctorId('')
+    setStaffId('')
     setLoginError('')
     setShowDoctorModal(false)
+    setShowStaffModal(false)
     setShowChangePassword(false)
-    if (selectedRole !== 'doctor') {
+    if (selectedRole !== 'doctor' && selectedRole !== 'staff') {
       onLogin(selectedRole, '')
-    } else {
+    } else if (selectedRole === 'doctor') {
       setShowDoctorModal(true)
+    } else {
+      setShowStaffModal(true)
     }
   }
+
   return (
     <div className="page login-page">
       <div className="login-card">
@@ -136,6 +192,7 @@ export default function LoginPage({ onLogin }) {
                 <button className="btn-close" onClick={() => {
                   setShowDoctorModal(false)
                   setPassword('')
+                  setDoctorId('')
                   setLoginError('')
                 }}>×</button>
               </div>
@@ -186,6 +243,73 @@ export default function LoginPage({ onLogin }) {
                   form="doctor-login-form"
                   className="btn btn-primary"
                   disabled={!doctorId || !password}
+                >
+                  Login
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showStaffModal && (
+          <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
+            <div className="modal">
+              <div className="modal-header">
+                <h3>Staff Login</h3>
+                <button className="btn-close" onClick={() => {
+                  setShowStaffModal(false)
+                  setPassword('')
+                  setStaffId('')
+                  setLoginError('')
+                }}>×</button>
+              </div>
+              <div className="modal-body">
+                <form id="staff-login-form" onSubmit={(e) => { e.preventDefault(); handleStaffLogin(); }}>
+                  <label style={{ display: 'block', fontWeight: 500, marginBottom: 8, fontSize: 14 }}>
+                    Select Staff
+                  </label>
+                  <select
+                    value={staffId}
+                    onChange={(e) => setStaffId(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: 10, fontSize: 14, marginBottom: 12, borderRadius: 6, border: '1px solid var(--border, #e2e8f0)', background: '#fff' }}
+                  >
+                    <option value="">-- Choose Staff --</option>
+                    {staffs.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                  <label style={{ display: 'block', fontWeight: 500, marginBottom: 8, fontSize: 14 }}>
+                    Enter your password
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoFocus
+                  />
+                  {loginError && <span className="login-error">{loginError}</span>}
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setShowStaffModal(false)
+                    setPassword('')
+                    setStaffId('')
+                    setLoginError('')
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  form="staff-login-form"
+                  className="btn btn-primary"
+                  disabled={!staffId || !password}
                 >
                   Login
                 </button>
