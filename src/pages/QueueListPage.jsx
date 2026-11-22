@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
 
@@ -16,7 +16,7 @@ const Breadcrumb = ({ items }) => (
 export default function QueueListPage() {
   const { queues, serving, doctors } = useQueue()
   const [filterDoctor, setFilterDoctor] = useState('all')
-
+  const prevServingRef = useRef({})
   const allPatients = []
   const servingPatients = []
   for (const [doctorId, queue] of Object.entries(queues)) {
@@ -74,6 +74,24 @@ export default function QueueListPage() {
         return result
       })()
     : waitingPatients.filter(p => p.doctorId === filterDoctor).sort((a, b) => (a.queueNumber || 0) - (b.queueNumber || 0))
+
+  useEffect(() => {
+    const prev = prevServingRef.current || {}
+    const next = {}
+    Object.keys(serving).forEach((doctorId) => {
+      next[doctorId] = serving[doctorId]?.id
+      if (prev[doctorId] !== next[doctorId] && 'speechSynthesis' in window) {
+        const s = serving[doctorId]
+        const doc = doctors.find(d => d.id === doctorId)
+        const q = (queues[doctorId] || []).filter(p => p.id !== s?.id).sort((a,b) => (a.queueNumber||0)-(b.queueNumber||0))
+        const nxt = q[0]
+        const msg = `${doc ? doc.name : 'Doctor'} now serving ${s?.name || 'patient'}. Next: ${nxt ? (nxt.name || 'patient') : 'none'}.`
+        const u = new SpeechSynthesisUtterance(msg)
+        window.speechSynthesis.speak(u)
+      }
+    })
+    prevServingRef.current = next
+  }, [serving, queues, doctors])
 
   return (
     <div className="page queue-list-page">
