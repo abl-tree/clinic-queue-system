@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { useQueue } from '../context/QueueContext'
+import { db } from '../lib/firebase'
+import { collection, addDoc } from 'firebase/firestore'
 import { useState, useEffect } from 'react'
 
 const Breadcrumb = ({ items }) => (
@@ -94,9 +95,10 @@ export default function DoctorPage({ doctorId } = {}) {
             </button>
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 if (!('speechSynthesis' in window)) return
                 const msg = `${currentServing?.name || 'patient'}.`
+                try { await addDoc(collection(db, 'announcements'), { text: msg, createdAt: Date.now() }) } catch {}
                 window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg))
               }}
               className="btn btn-primary btn-sm"

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useQueue } from '../context/QueueContext'
+import { db } from '../lib/firebase'
+import { collection, onSnapshot } from 'firebase/firestore'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
@@ -15,7 +16,19 @@ const Breadcrumb = ({ items }) => (
 
 export default function QueueListPage() {
   const { queues, serving, doctors } = useQueue()
-  const [filterDoctor, setFilterDoctor] = useState('all')
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'announcements'), (snap) => {
+      snap.docChanges().forEach((c) => {
+        if (c.type === 'added') {
+          const text = c.doc.data().text
+          if (text && 'speechSynthesis' in window) {
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+          }
+        }
+      })
+    })
+    return () => unsub()
+  }, [])
   const prevServingRef = useRef({})
   const allPatients = []
   const servingPatients = []
