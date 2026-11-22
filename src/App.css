@@ -379,8 +379,19 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 }
 .serving-item .patient-info {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.serving-item .patient-number {
+  font-size: 28px;
+  font-weight: 900;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+  margin: 0;
 }
 .serving-item .patient-name {
   font-size: 30px;

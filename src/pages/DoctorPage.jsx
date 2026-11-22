@@ -13,7 +13,7 @@ const Breadcrumb = ({ items }) => (
 )
 
 export default function DoctorPage({ doctorId } = {}) {
-  const { doctors, queues, serving, loading, serveNext, skipPatient, donePatient } = useQueue()
+  const { doctors, queues, serving, loading, serveNext, servePatient, skipPatient, donePatient } = useQueue()
   const currentDoctorId = doctorId
   const doctor = doctors.find(d => d.id === currentDoctorId)
   const queue = queues[currentDoctorId] || []
@@ -43,6 +43,7 @@ export default function DoctorPage({ doctorId } = {}) {
         <section className="serving-window">
           <div className="serving-badge">NOW SERVING</div>
           <div className="serving-patient-info">
+            <span className="patient-number">#{currentServing.queueNumber || '—'}</span>
             <span className="patient-name">
               {currentServing.name ? currentServing.name : 'Patient'}
             </span>
@@ -103,6 +104,13 @@ export default function DoctorPage({ doctorId } = {}) {
                   </span>
                 </div>
                 <span className="time">{patient.timestamp}</span>
+                <button
+                  type="button"
+                  onClick={() => servePatient(currentDoctorId, patient.id)}
+                  className="btn btn-primary btn-sm"
+                >
+                  Serve
+                </button>
               </div>
             ))
           )}

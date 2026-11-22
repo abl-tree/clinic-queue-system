@@ -61,7 +61,6 @@ export default function QueueListPage() {
 
   return (
     <div className="page queue-list-page">
-      <Breadcrumb items={[{ label: 'Queue' }]} />
       <div className="two-col">
         <div className="col now-serving">
           <div className="serving-section">
@@ -73,9 +72,8 @@ export default function QueueListPage() {
                 {servingPatients.map((patient) => (
                   <div key={patient.id} className="serving-item">
                     <div className="patient-info">
+                      <span className="patient-number">#{patient.queueNumber !== undefined ? patient.queueNumber : '—'}</span>&nbsp;
                       <span className="patient-name">{patient.name || 'Patient'}</span>
-                      {patient.contact && <span className="patient-contact">{patient.contact}</span>}
-                      {patient.reason && <span className="patient-reason">{patient.reason}</span>}
                       {patient.doctorName && <span className="patient-doctor">with {patient.doctorName}</span>}
                     </div>
                   </div>

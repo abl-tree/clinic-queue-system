@@ -96,14 +96,14 @@ function AppRoutes() {
         </div>
         {user ? (
           <div className="user-info">
-            <span onClick={() => navigate('/queue')} style={{ cursor: 'pointer', marginRight: 16 }}>📋 Queue</span>
+            <a href="/queue" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer', marginRight: 16 }}>📋 Queue Window</a>
             <span style={{ marginLeft: 16 }}>{user.role === 'doctor' ? 'Dr. View' : user.role === 'staff' ? 'Staff Station' : 'Patient View'}</span>
             <button onClick={logout} className="btn btn-ghost btn-sm">Logout</button>
           </div>
         ) : (
-          <Link to="/queue" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <button className="btn btn-ghost btn-sm">Public Queue</button>
-          </Link>
+          <a href="/queue" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <button className="btn btn-ghost btn-sm">Queue Window</button>
+          </a>
         )}
       </header>
       <main className="main-content">

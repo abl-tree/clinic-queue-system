@@ -395,6 +395,53 @@ export function QueueProvider({ children }) {
     }
   }, [doctors])
 
+  const servePatient = useCallback(async (doctorId, patientId) => {
+    try {
+      const queueRef = collection(db, 'queues', doctorId, 'patients')
+      const patientDocRef = doc(db, 'queues', doctorId, 'patients', patientId)
+      const patientSnap = await getDoc(patientDocRef)
+      if (!patientSnap.exists()) return
+
+      const patient = { id: patientSnap.id, ...patientSnap.data() }
+
+      const servingRef = doc(db, 'serving', doctorId)
+      const currentServingSnap = await getDoc(servingRef)
+      if (currentServingSnap.exists()) {
+        const currentServing = currentServingSnap.data()
+        if (currentServing.id && currentServing.id !== patientId) {
+          await updateDoc(doc(db, 'queues', doctorId, 'patients', currentServing.id), {
+            status: 'completed',
+            updatedAt: serverTimestamp()
+          })
+        }
+      }
+
+      await deleteDoc(servingRef)
+
+      await updateDoc(doc(db, 'queues', doctorId, 'patients', patientId), {
+        status: 'serving',
+        updatedAt: serverTimestamp()
+      })
+
+      await setDoc(doc(db, 'serving', doctorId), {
+        ...patient,
+        startedAt: serverTimestamp()
+      })
+
+      const doctor = doctors.find(d => d.id === doctorId)
+      await sendNotification(
+        patient.hrn,
+        doctor ? `Clinic Queue - Dr. ${doctor.name}` : 'Clinic Queue',
+        `It's your turn! Dr. ${doctor ? doctor.name : 'your doctor'} is now seeing you.`,
+        { doctorId, type: 'serving' }
+      )
+
+    } catch (err) {
+      console.error('Error serving patient:', err)
+      throw err
+    }
+  }, [doctors])
+
   const skipPatient = useCallback(async (doctorId) => {
     try {
       const servingRef = doc(db, 'serving', doctorId)
@@ -589,6 +636,7 @@ export function QueueProvider({ children }) {
     verifyAdmin,
     addAdmin,
     serveNext,
+    servePatient,
     skipPatient,
     donePatient,
     removePatient,
