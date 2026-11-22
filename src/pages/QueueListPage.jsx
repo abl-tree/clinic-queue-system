@@ -112,8 +112,9 @@ export default function QueueListPage() {
     <div className="page queue-list-page">
       <div className="two-col">
         <div className="col now-serving">
-          <div className="serving-section">
-            <div className="serving-badge">NOW SERVING</div>
+            <div className="serving-section">
+              <div className="serving-badge">NOW SERVING</div>
+              <button onClick={() => { if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('Sound enabled')) }} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>🔊</button>
             {servingPatients.length === 0 ? (
               <p className="empty">No patients being served.</p>
             ) : (
