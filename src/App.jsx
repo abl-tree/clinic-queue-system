@@ -92,7 +92,7 @@ function AppRoutes() {
     <div className="app">
       <header className="top-bar">
         <div className="logo">
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>🏥 Clinic Queue</Link>
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>🏥 {import.meta.env.VITE_APP_NAME || 'Clinic Queue'}</Link>
         </div>
         {user ? (
           <div className="user-info">
