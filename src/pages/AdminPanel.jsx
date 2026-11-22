@@ -422,7 +422,10 @@ export default function AdminPanel() {
           </div>
           <div className="queue-list">
             {loadingPatients ? (
-              <p className="empty">Loading patients...</p>
+              <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+                <div className="loading-spinner" style={{ marginBottom: 12 }}></div>
+                <p style={{ color: '#64748b', fontSize: 14 }}>Loading patients...</p>
+              </div>
             ) : patients.length === 0 ? (
               <p className="empty">No patients</p>
             ) : (

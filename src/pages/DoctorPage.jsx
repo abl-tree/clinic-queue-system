@@ -1,4 +1,3 @@
-import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
 
@@ -13,20 +12,26 @@ const Breadcrumb = ({ items }) => (
   </nav>
 )
 
-export default function DoctorPage() {
-  const { doctorId } = useParams()
-  const { doctors, queues, serving, serveNext, skipPatient, donePatient } = useQueue()
-  const doctor = doctors.find(d => d.id === doctorId)
-  const queue = queues[doctorId] || []
-  const currentServing = serving[doctorId]
+export default function DoctorPage({ doctorId } = {}) {
+  const { doctors, queues, serving, loading, serveNext, skipPatient, donePatient } = useQueue()
+  const currentDoctorId = doctorId
+  const doctor = doctors.find(d => d.id === currentDoctorId)
+  const queue = queues[currentDoctorId] || []
+  const currentServing = serving[currentDoctorId]
 
+  if (loading) return (
+    <div className="page doctor-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+      <div className="loading-spinner" style={{ marginBottom: 12 }}></div>
+      <p style={{ color: '#64748b', fontSize: 14 }}>Loading...</p>
+    </div>
+  )
   if (!doctor) return <div className="page">Doctor not found</div>
 
   return (
     <div className="page doctor-page">
       <header className="page-header">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <Breadcrumb items={[{ label: 'Home', link: '/' }, { label: 'Doctor', link: '/doctor/' + doctorId }, { label: doctor.name }]} />
+          <Breadcrumb items={[{ label: 'Home', link: '/' }, { label: 'Doctor' }]} />
           <div>
             <h1>{doctor.name}</h1>
             <span className="specialty">{doctor.specialty}</span>
@@ -54,14 +59,14 @@ export default function DoctorPage() {
           <div className="serving-actions">
             <button
               type="button"
-              onClick={() => skipPatient(doctorId)}
+              onClick={() => skipPatient(currentDoctorId)}
               className="btn btn-danger btn-sm"
             >
               Skip
             </button>
             <button
               type="button"
-              onClick={() => donePatient(doctorId)}
+              onClick={() => donePatient(currentDoctorId)}
               className="btn btn-primary btn-sm"
             >
               Done
@@ -75,7 +80,7 @@ export default function DoctorPage() {
           <h2>Waiting Queue ({queue.length})</h2>
           {!currentServing && (
             <button
-              onClick={() => serveNext(doctorId)}
+              onClick={() => serveNext(currentDoctorId)}
               disabled={queue.length === 0}
               className="btn btn-primary"
             >

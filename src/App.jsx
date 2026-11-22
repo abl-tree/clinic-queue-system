@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { QueueProvider } from './context/QueueContext'
 import LoginPage from './pages/LoginPage'
@@ -58,11 +58,12 @@ function AppRoutes() {
   }, [navigate])
 
   const login = (role, doctorId) => {
+    if (user) return
     const userData = { role, doctorId }
     setUser(userData)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userData))
     if (role === 'doctor') {
-      navigate(`/doctor/${doctorId}`)
+      navigate('/doctor')
     } else if (role === 'staff') {
       navigate('/staff')
     } else if (role === 'admin') {
@@ -79,37 +80,52 @@ function AppRoutes() {
   }
 
   if (!hydrated) {
-    return <div className="app loading">Loading...</div>
+    return (
+      <div className="app loading" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+        <div className="loading-spinner" style={{ marginBottom: 12 }}></div>
+        <p style={{ color: '#64748b', fontSize: 14 }}>Loading...</p>
+      </div>
+    )
   }
 
   return (
     <div className="app">
       <header className="top-bar">
-        <div className="logo">🏥 Clinic Queue</div>
+        <div className="logo">
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>🏥 Clinic Queue</Link>
+        </div>
         {user ? (
           <div className="user-info">
-            <span>{user.role === 'doctor' ? 'Dr. View' : user.role === 'staff' ? 'Staff Station' : 'Patient View'}</span>
+            <span onClick={() => navigate('/queue')} style={{ cursor: 'pointer', marginRight: 16 }}>📋 Queue</span>
+            <span style={{ marginLeft: 16 }}>{user.role === 'doctor' ? 'Dr. View' : user.role === 'staff' ? 'Staff Station' : 'Patient View'}</span>
             <button onClick={logout} className="btn btn-ghost btn-sm">Logout</button>
           </div>
-        ) : null}
+        ) : (
+          <Link to="/queue" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <button className="btn btn-ghost btn-sm">Public Queue</button>
+          </Link>
+        )}
       </header>
       <main className="main-content">
         <Routes>
           <Route path="/" element={
             user && user.role === 'admin' ? <Navigate to="/admin" replace />
               : user && user.role === 'staff' ? <StaffPage />
-                : user && user.role === 'doctor' ? <Navigate to={`/doctor/${user.doctorId}`} replace />
+                : user && user.role === 'doctor' ? <DoctorPage doctorId={user.doctorId} />
                   : user && user.role === 'patient' ? <PatientPage />
                     : <QueueListPage />
           } />
-          <Route path="/login" element={<LoginPage onLogin={login} />} />
+          <Route path="/queue" element={<QueueListPage />} />
+          <Route path="/login" element={
+            user ? <Navigate to="/" replace /> : <LoginPage onLogin={login} />
+          } />
           {user && user.role === 'staff' && <Route path="/staff" element={<StaffPage />} />}
           {user && user.role === 'staff' && <Route path="/staff/manage-doctors" element={<ManageDoctorsPage />} />}
-          {user && user.role === 'staff' && <Route path="/staff/manage-doctors" element={<ManageDoctorsPage />} />}
           <Route path="/admin" element={
-            user && user.role === 'admin' ? <AdminPanel /> : <AdminLogin onLogin={login} />
+            user && user.role === 'admin' ? <AdminPanel />
+              : user ? <Navigate to="/" replace />
+                : <AdminLogin onLogin={login} />
           } />
-          {user && user.role === 'doctor' && <Route path="/doctor/:doctorId" element={<DoctorPage />} />}
           {user && user.role === 'patient' && <Route path="/patient" element={<PatientPage />} />}
           {!user ? (
             <Route path="*" element={<Navigate to="/login" replace />} />

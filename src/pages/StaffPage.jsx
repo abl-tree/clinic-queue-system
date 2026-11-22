@@ -24,6 +24,8 @@ export default function StaffPage() {
   const [addingDoctor, setAddingDoctor] = useState(false)
   const [newDoctorName, setNewDoctorName] = useState('')
   const [newDoctorSpecialty, setNewDoctorSpecialty] = useState('Internal Medicine')
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
+  const [doctorToClear, setDoctorToClear] = useState(null)
 
   const capitalize = (str) => {
     if (!str) return ''
@@ -101,7 +103,7 @@ export default function StaffPage() {
   return (
     <div className="page staff-page">
       <header className="page-header">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', alignItems: 'flex-start' }}>
           <Breadcrumb items={[{ label: 'Home', link: '/' }, { label: 'Staff' }]} />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <h1>Staff / Nurse Station</h1>
@@ -180,9 +182,28 @@ export default function StaffPage() {
           <div className="queue-header">
             <h2>Queue for {currentDoctor?.name} ({currentQueue.length})</h2>
             {currentQueue.length > 0 && (
-              <button onClick={() => clearQueue(selectedDoctor)} className="btn btn-danger btn-sm">
-                Clear Queue
-              </button>
+              <>
+                <button onClick={() => { setDoctorToClear(selectedDoctor); setShowClearConfirm(true) }} className="btn btn-danger btn-sm">
+                  Clear Queue
+                </button>
+                {showClearConfirm && doctorToClear && (
+                  <div className="modal-overlay" onClick={() => setShowClearConfirm(false)}>
+                    <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, width: '90vw' }}>
+                      <div className="modal-header">
+                        <h3>Confirm Clear Queue</h3>
+                        <button className="btn-close" onClick={() => setShowClearConfirm(false)}>×</button>
+                      </div>
+                      <div className="modal-body">
+                        <p style={{ margin: 0, fontSize: 14 }}>Are you sure you want to clear all patients from this doctor's queue? This cannot be undone.</p>
+                      </div>
+                      <div className="modal-footer">
+                        <button type="button" className="btn btn-ghost" onClick={() => setShowClearConfirm(false)}>Cancel</button>
+                        <button type="button" className="btn btn-danger" onClick={() => { clearQueue(doctorToClear); setShowClearConfirm(false); setDoctorToClear(null) }}>Clear Queue</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div className="queue-list">

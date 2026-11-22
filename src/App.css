@@ -54,6 +54,7 @@ body {
   font-size: clamp(18px, 4vw, 22px); 
   color: var(--primary); 
   white-space: nowrap;
+  cursor: pointer;
 }
 .user-info { 
   display: flex; 
