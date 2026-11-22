@@ -6,6 +6,9 @@ import StaffPage from './pages/StaffPage'
 import DoctorPage from './pages/DoctorPage'
 import PatientPage from './pages/PatientPage'
 import QueueListPage from './pages/QueueListPage'
+import ManageDoctorsPage from './pages/ManageDoctorsPage'
+import AdminPanel from './pages/AdminPanel'
+import AdminLogin from './pages/AdminLogin'
 import { registerPush, onPushMessage } from './lib/push'
 import './App.css'
 
@@ -43,6 +46,17 @@ function AppRoutes() {
     })
   }, [])
 
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault()
+        navigate('/admin')
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [navigate])
+
   const login = (role, doctorId) => {
     const userData = { role, doctorId }
     setUser(userData)
@@ -51,6 +65,8 @@ function AppRoutes() {
       navigate(`/doctor/${doctorId}`)
     } else if (role === 'staff') {
       navigate('/staff')
+    } else if (role === 'admin') {
+      navigate('/admin')
     } else {
       navigate('/patient')
     }
@@ -79,9 +95,20 @@ function AppRoutes() {
       </header>
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<QueueListPage />} />
+          <Route path="/" element={
+            user && user.role === 'admin' ? <Navigate to="/admin" replace />
+              : user && user.role === 'staff' ? <StaffPage />
+                : user && user.role === 'doctor' ? <Navigate to={`/doctor/${user.doctorId}`} replace />
+                  : user && user.role === 'patient' ? <PatientPage />
+                    : <QueueListPage />
+          } />
           <Route path="/login" element={<LoginPage onLogin={login} />} />
           {user && user.role === 'staff' && <Route path="/staff" element={<StaffPage />} />}
+          {user && user.role === 'staff' && <Route path="/staff/manage-doctors" element={<ManageDoctorsPage />} />}
+          {user && user.role === 'staff' && <Route path="/staff/manage-doctors" element={<ManageDoctorsPage />} />}
+          <Route path="/admin" element={
+            user && user.role === 'admin' ? <AdminPanel /> : <AdminLogin onLogin={login} />
+          } />
           {user && user.role === 'doctor' && <Route path="/doctor/:doctorId" element={<DoctorPage />} />}
           {user && user.role === 'patient' && <Route path="/patient" element={<PatientPage />} />}
           {!user ? (

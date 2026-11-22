@@ -1,5 +1,17 @@
 import { useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
+
+const Breadcrumb = ({ items }) => (
+  <nav className="breadcrumb">
+    {items.map((item, i) => (
+      <>
+        {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
+        {i < items.length - 1 && <span className="sep">›</span>}
+      </>
+    ))}
+  </nav>
+)
 
 export default function DoctorPage() {
   const { doctorId } = useParams()
@@ -13,9 +25,12 @@ export default function DoctorPage() {
   return (
     <div className="page doctor-page">
       <header className="page-header">
-        <div>
-          <h1>{doctor.name}</h1>
-          <span className="specialty">{doctor.specialty}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <Breadcrumb items={[{ label: 'Home', link: '/' }, { label: 'Doctor', link: '/doctor/' + doctorId }, { label: doctor.name }]} />
+          <div>
+            <h1>{doctor.name}</h1>
+            <span className="specialty">{doctor.specialty}</span>
+          </div>
         </div>
       </header>
 

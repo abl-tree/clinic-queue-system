@@ -1,5 +1,17 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
+
+const Breadcrumb = ({ items }) => (
+  <nav className="breadcrumb">
+    {items.map((item, i) => (
+      <>
+        {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
+        {i < items.length - 1 && <span className="sep">›</span>}
+      </>
+    ))}
+  </nav>
+)
 
 export default function QueueListPage() {
   const { queues, serving, doctors } = useQueue()
@@ -49,6 +61,7 @@ export default function QueueListPage() {
 
   return (
     <div className="page queue-list-page">
+      <Breadcrumb items={[{ label: 'Queue' }]} />
       <div className="two-col">
         <div className="col now-serving">
           <div className="serving-section">

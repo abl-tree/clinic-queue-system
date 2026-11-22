@@ -5,6 +5,7 @@ import {
   getDocs, writeBatch, setDoc, getDoc, increment
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
+import { encrypt } from '../lib/crypto'
 
 const QueueContext = createContext(null)
 
@@ -110,16 +111,112 @@ export function QueueProvider({ children }) {
 
   const addDoctor = useCallback(async (doctorData) => {
     try {
-      const { name, specialty } = doctorData
+      const { name, specialty, password } = doctorData
+      const encryptedPassword = password ? await encrypt(password) : undefined
       const doctorsRef = collection(db, 'doctors')
       const docRef = await addDoc(doctorsRef, {
         name,
         specialty,
+        password: encryptedPassword,
+        mustChangePassword: true,
         createdAt: serverTimestamp()
       })
       return docRef.id
     } catch (err) {
       console.error('Error adding doctor:', err)
+      throw err
+    }
+  }, [])
+
+  const updateDoctor = useCallback(async (doctorId, updates) => {
+    try {
+      const doctorRef = doc(db, 'doctors', doctorId)
+      await updateDoc(doctorRef, {
+        ...updates,
+        updatedAt: serverTimestamp()
+      })
+    } catch (err) {
+      console.error('Error updating doctor:', err)
+      throw err
+    }
+  }, [])
+
+  const resetDoctorPassword = useCallback(async (doctorId, password) => {
+    try {
+      const encryptedPassword = password ? await encrypt(password) : undefined
+      const doctorRef = doc(db, 'doctors', doctorId)
+      await updateDoc(doctorRef, {
+        password: encryptedPassword,
+        passwordUpdatedAt: serverTimestamp(),
+        mustChangePassword: true,
+        updatedAt: serverTimestamp()
+      })
+    } catch (err) {
+      console.error('Error resetting doctor password:', err)
+      throw err
+    }
+  }, [])
+
+  const changeDoctorPassword = useCallback(async (doctorId, password) => {
+    try {
+      const encryptedPassword = password ? await encrypt(password) : undefined
+      const doctorRef = doc(db, 'doctors', doctorId)
+      await updateDoc(doctorRef, {
+        password: encryptedPassword,
+        passwordUpdatedAt: serverTimestamp(),
+        mustChangePassword: false,
+        updatedAt: serverTimestamp()
+      })
+    } catch (err) {
+      console.error('Error changing doctor password:', err)
+      throw err
+    }
+  }, [])
+
+  const deleteDoctor = useCallback(async (doctorId) => {
+    try {
+      const doctorRef = doc(db, 'doctors', doctorId)
+      await deleteDoc(doctorRef)
+    } catch (err) {
+      console.error('Error deleting doctor:', err)
+      throw err
+    }
+  }, [])
+
+  const verifyAdmin = useCallback(async (username, password) => {
+    try {
+      const adminsRef = collection(db, 'admins')
+      const q = query(adminsRef, where('username', '==', username))
+      const snapshot = await getDocs(q)
+      if (snapshot.empty) return null
+      const adminDoc = snapshot.docs[0]
+      const adminData = { id: adminDoc.id, ...adminDoc.data() }
+      if (!adminData.password) return null
+      const storedPassword = await decrypt(adminData.password)
+      if (storedPassword === password) {
+        return adminData
+      }
+      return null
+    } catch (err) {
+      console.error('Error verifying admin:', err)
+      return null
+    }
+  }, [])
+
+  const addAdmin = useCallback(async (username, password) => {
+    try {
+      const encryptedPassword = password ? await encrypt(password) : undefined
+      const adminsRef = collection(db, 'admins')
+      const q = query(adminsRef, where('username', '==', username))
+      const snapshot = await getDocs(q)
+      if (!snapshot.empty) throw new Error('Admin already exists')
+      await addDoc(adminsRef, {
+        username,
+        password: encryptedPassword,
+        createdAt: serverTimestamp()
+      })
+    } catch (err) {
+      console.error('Error adding admin:', err)
       throw err
     }
   }, [])
@@ -412,6 +509,12 @@ export function QueueProvider({ children }) {
     error,
     addPatient,
     addDoctor,
+    updateDoctor,
+    resetDoctorPassword,
+    changeDoctorPassword,
+    deleteDoctor,
+    verifyAdmin,
+    addAdmin,
     serveNext,
     skipPatient,
     donePatient,

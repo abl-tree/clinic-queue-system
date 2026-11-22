@@ -1,7 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useQueue } from '../context/QueueContext'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { registerPush } from '../lib/push'
+
+const Breadcrumb = ({ items }) => (
+  <nav className="breadcrumb">
+    {items.map((item, i) => (
+      <>
+        {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
+        {i < items.length - 1 && <span className="sep">›</span>}
+      </>
+    ))}
+  </nav>
+)
 
 export default function PatientPage() {
   const { doctors, getPatientView, savePatientProfile } = useQueue()
@@ -61,9 +72,12 @@ export default function PatientPage() {
   return (
     <div className="page patient-page">
       <header className="page-header">
-        <div>
-          <h1>Patient Queue Status</h1>
-          <p className="subtitle">Enter your HRN to check your position</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <Breadcrumb items={[{ label: 'Patient', link: '/patient' }]} />
+          <div>
+            <h1>Patient Queue Status</h1>
+            <p className="subtitle">Enter your HRN to check your position</p>
+          </div>
         </div>
       </header>
 

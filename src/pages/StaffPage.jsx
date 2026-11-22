@@ -1,8 +1,21 @@
 import { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
 
 export default function StaffPage() {
   const { doctors, queues, addPatient, removePatient, clearQueue, getPatientProfile, addDoctor, savePatientProfile } = useQueue()
+  const navigate = useNavigate()
+
+  const Breadcrumb = ({ items }) => (
+    <nav className="breadcrumb">
+      {items.map((item, i) => (
+        <>
+          {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
+          {i < items.length - 1 && <span className="sep">›</span>}
+        </>
+      ))}
+    </nav>
+  )
   const [selectedDoctor, setSelectedDoctor] = useState(doctors.length > 0 ? doctors[0]?.id : '')
   const [formData, setFormData] = useState({ hrn: '', name: '', contact: '', reason: '' })
   const [patientFound, setPatientFound] = useState(false)
@@ -74,7 +87,8 @@ export default function StaffPage() {
   const handleAddDoctor = async (e) => {
     if (e) e.preventDefault()
     if (!newDoctorName.trim()) return
-    const newId = await addDoctor({ name: capitalize(newDoctorName), specialty: capitalize(newDoctorSpecialty) })
+    const password = 'doc1234'
+    const newId = await addDoctor({ name: capitalize(newDoctorName), specialty: capitalize(newDoctorSpecialty), password })
     setAddingDoctor(false)
     setSelectedDoctor(newId)
     setNewDoctorName('')
@@ -87,7 +101,15 @@ export default function StaffPage() {
   return (
     <div className="page staff-page">
       <header className="page-header">
-        <h1>Staff / Nurse Station</h1>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <Breadcrumb items={[{ label: 'Home', link: '/' }, { label: 'Staff' }]} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <h1>Staff / Nurse Station</h1>
+            <Link to="/staff/manage-doctors">
+              <button className="btn btn-primary btn-sm">Manage Doctors</button>
+            </Link>
+          </div>
+        </div>
       </header>
 
       <div className="content-grid">
@@ -216,17 +238,21 @@ export default function StaffPage() {
                   <option value="Orthopedics">Orthopedics</option>
                   <option value="Oncology">Oncology</option>
                 </select>
+                <p style={{ fontSize: 12, color: '#64748b', marginTop: 8, marginBottom: 0 }}>
+                  Default password is doc1234.
+                </p>
               </form>
             </div>
             <div className="modal-footer">
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() => {
-                  setAddingDoctor(false)
-                  setNewDoctorName('')
-                  setNewDoctorSpecialty('Internal Medicine')
-                }}
+              onClick={() => {
+                setAddingDoctor(false)
+                setNewDoctorName('')
+                setNewDoctorSpecialty('Internal Medicine')
+                setNewDoctorUsername('')
+              }}
               >
                 Cancel
               </button>
