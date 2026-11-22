@@ -1,3 +1,4 @@
+import { useQueue } from '../context/QueueContext'
 import { Link } from 'react-router-dom'
 import { db } from '../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'

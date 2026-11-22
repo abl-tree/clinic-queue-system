@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useQueue } from '../context/QueueContext'
 import { Link, useLocation } from 'react-router-dom'
 import { db } from '../lib/firebase'
 import { collection, onSnapshot } from 'firebase/firestore'
@@ -30,6 +31,7 @@ export default function QueueListPage() {
     return () => unsub()
   }, [])
   const prevServingRef = useRef({})
+  const [filterDoctor, setFilterDoctor] = useState('all')
   const allPatients = []
   const servingPatients = []
   for (const [doctorId, queue] of Object.entries(queues)) {
