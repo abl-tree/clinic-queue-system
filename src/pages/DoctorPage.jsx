@@ -67,6 +67,7 @@ export default function DoctorPage({ doctorId } = {}) {
       {currentServing && (
         <section className="serving-window">
           <div className="serving-badge">NOW SERVING</div>
+          <button className="sound-toggle" onClick={() => { if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('Sound enabled')) }} aria-label="Enable sound announcements">🔊</button>
           <div className="serving-patient-info">
             <span className="patient-number">#{currentServing.queueNumber || '—'}</span>
             <span className="patient-name">

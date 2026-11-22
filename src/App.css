@@ -30,6 +30,28 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection for specific elements */
+input, textarea, select, .patient-name, .patient-name-minimal, .patient-doctor, .patient-doctor-minimal, .patient-contact, .patient-reason, .patient-hrn, .patient-timespend, .patient-meta, .time, .subtitle, .specialty, .stat-label, .stat-value, .doctor-name, .doctor-specialty, .role-label, .role-desc, .login-header p, .empty, .not-found-card p, .wait-message {
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Prevent zoom on input focus on iOS */
+@media screen and (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 .app { min-height: 100vh; display: flex; flex-direction: column; }
@@ -210,6 +232,14 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 .queue-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .queue-list::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+@media (max-width: 640px) {
+  .queue-list {
+    max-height: 65vh;
+    padding-right: 0;
+    padding-bottom: 20px;
+  }
+}
+
 .queue-item {
   display: flex; 
   align-items: center; 
@@ -228,6 +258,38 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   border-color: var(--border);
 }
 .queue-item:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  .queue-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  .queue-item .queue-number {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .queue-item .patient-info {
+    width: 100%;
+  }
+  .queue-item .patient-name {
+    font-size: 15px;
+  }
+  .queue-item .patient-meta {
+    font-size: 13px;
+  }
+  .queue-item .time {
+    display: none;
+  }
+  .queue-item .btn-sm {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+}
 
 .queue-item-minimal {
   display: flex;
@@ -264,6 +326,46 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Mobile queue-item-minimal adjustments */
+@media (max-width: 640px) {
+  .queue-item-minimal {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 12px;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .queue-item-minimal .queue-number {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+  .next-badge-row {
+    margin-bottom: 4px;
+    width: 100%;
+  }
+  .next-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  .queue-details-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .patient-name-minimal {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+  }
+  .patient-doctor-minimal {
+    font-size: 12px;
+    margin-left: 0;
+  }
 }
 
 .queue-number {
@@ -335,8 +437,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   background: linear-gradient(135deg, #FBE9EE 0%, #FCE4EC 100%);
   border: 3px solid var(--primary);
   border-radius: 24px;
-  padding: 32px 24px;
-  margin-bottom: 32px;
+  padding: clamp(20px, 5vw, 32px) clamp(16px, 4vw, 24px);
+  margin-bottom: clamp(20px, 4vw, 32px);
   position: relative;
   overflow: hidden;
   box-shadow: 0 20px 40px -10px rgba(226, 113, 147, 0.3);
@@ -346,20 +448,20 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 8px;
+  height: 6px;
   background: linear-gradient(90deg, var(--primary), var(--primary-hover));
 }
 .serving-section h3,
 .serving-section-title {
-  font-size: clamp(16px, 3vw, 18px);
+  font-size: clamp(14px, 3.5vw, 18px);
   font-weight: 800;
-  margin-bottom: 20px;
+  margin-bottom: clamp(16px, 3vw, 20px);
   color: white;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: var(--primary);
-  padding: 10px 20px;
+  padding: clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px);
   border-radius: 30px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -374,7 +476,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 .serving-item {
   background: rgba(255,255,255,0.6);
   border-radius: 16px;
-  padding: 16px 20px;
+  padding: clamp(12px, 3vw, 16px) clamp(16px, 4vw, 20px);
   border: 1px solid rgba(255,255,255,0.4);
 }
 .serving-item .patient-info {
@@ -382,37 +484,43 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   flex-direction: row;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .serving-item .patient-number {
-  font-size: 28px;
+  font-size: clamp(20px, 5vw, 28px);
   font-weight: 900;
   color: var(--primary);
   background: #FBE9EE;
-  padding: 4px 10px;
+  padding: clamp(2px, 1vw, 4px) clamp(8px, 2vw, 10px);
   border-radius: 8px;
   border: 1px solid var(--border);
   margin: 0;
+  white-space: nowrap;
 }
 .serving-item .patient-name {
-  font-size: 30px;
+  font-size: clamp(22px, 6vw, 30px);
   font-weight: 800;
   color: var(--text);
   margin: 0;
   line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .serving-item .patient-contact {
-  font-size: 16px;
+  font-size: clamp(14px, 3.5vw, 16px);
   color: var(--text-muted);
   font-weight: 600;
 }
 .serving-item .patient-reason {
-  font-size: 15px;
+  font-size: clamp(13px, 3vw, 15px);
   color: var(--text-muted);
   font-style: italic;
-  max-width: 600px;
+  max-width: 100%;
 }
 .serving-item .patient-doctor {
-  font-size: 14px;
+  font-size: clamp(12px, 3vw, 14px);
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -441,6 +549,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   justify-content: center; 
   gap: 8px;
   white-space: nowrap;
+  min-height: 44px;
 }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 .btn:active:not(:disabled) { transform: scale(0.98); }
@@ -461,9 +570,28 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 }
 .btn-ghost:hover { background: var(--bg); color: var(--text); }
 
-.btn-sm { padding: 10px 16px; font-size: 13px; }
+.btn-sm { padding: 10px 16px; font-size: 13px; min-height: 36px; }
 .btn-large { padding: 18px 48px; font-size: 16px; }
 .btn-full { width: 100%; }
+
+@media (max-width: 640px) {
+  .btn-sm {
+    padding: 12px 20px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+  .serving-actions {
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .serving-actions .btn-sm {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+  }
+}
 
 /* Breadcrumb */
 .breadcrumb {
@@ -637,15 +765,21 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   .card { padding: 18px; border-radius: 12px; }
   .page-header { margin-bottom: 18px; }
   .page-header h1 { font-size: 22px; }
-  .btn { padding: 14px 20px; font-size: 14px; }
+  .btn { padding: 14px 20px; font-size: 14px; min-height: 44px; }
   .btn-large { padding: 16px 32px; font-size: 15px; }
-  .queue-item { padding: 12px; gap: 10px; }
-  .position { width: 28px; height: 28px; font-size: 12px; }
+  .queue-item { padding: 14px; gap: 12px; }
+  .position { width: 32px; height: 32px; font-size: 13px; }
+  .queue-number { width: 32px; height: 32px; font-size: 13px; }
   .search-form { flex-direction: column; }
   .search-form .btn { width: 100%; }
   .detail-row { flex-direction: column; align-items: flex-start; gap: 4px; }
   .detail-row .value { text-align: left; }
   .user-info span:first-child { display: none; }
+  .serving-section { border-radius: 16px; }
+  .serving-window { border-radius: 16px; }
+  .serving-badge { font-size: 12px; padding: 8px 16px; }
+  .serving-item .patient-number { font-size: 20px; padding: 2px 8px; }
+  .serving-item .patient-name { font-size: 24px; }
 }
 
 @media (max-width: 480px) {
@@ -689,8 +823,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   width: fit-content;
 }
 .doctor-filter select {
-  padding: 10px 16px;
-  font-size: 14px;
+  padding: 12px 44px 12px 16px;
+  font-size: 15px;
   color: var(--text);
   background: white;
   border: 1px solid var(--border);
@@ -699,9 +833,24 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   cursor: pointer;
   appearance: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  min-height: 44px;
+  min-width: 180px;
 }
 .doctor-filter select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(226, 113, 147, 0.15); }
-.doctor-filter select option { padding: 10px; font-size: 14px; }
+.doctor-filter select option { padding: 12px; font-size: 15px; }
+
+@media (max-width: 640px) {
+  .doctor-filter {
+    justify-content: stretch;
+    width: 100%;
+  }
+  .doctor-filter select {
+    width: 100%;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 14px 48px 14px 16px;
+    min-height: 48px;
+  }
+}
 
 .filter-empty {
   padding: 10px 14px;
@@ -715,8 +864,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   background: linear-gradient(135deg, #FBE9EE 0%, #FCE4EC 100%);
   border: 3px solid var(--primary);
   border-radius: 24px;
-  padding: 32px 24px;
-  margin-bottom: 32px;
+  padding: clamp(20px, 5vw, 32px) clamp(16px, 4vw, 24px);
+  margin-bottom: clamp(20px, 4vw, 32px);
   position: relative;
   overflow: hidden;
   box-shadow: 0 20px 40px -10px rgba(226, 113, 147, 0.3);
@@ -726,7 +875,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 8px;
+  height: 6px;
   background: linear-gradient(90deg, var(--primary), var(--primary-hover));
 }
 .serving-badge {
@@ -753,12 +902,55 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   animation: pulse-fast 1.5s infinite;
 }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+/* Sound Toggle Button */
+.sound-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+  z-index: 10;
+}
+.sound-toggle:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+.sound-toggle:active {
+  transform: scale(0.95);
+}
+.sound-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(226, 113, 147, 0.3);
+}
+
+@media (max-width: 640px) {
+  .sound-toggle {
+    top: 8px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+  }
+}
 @keyframes pulse-fast { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }
 .serving-patient-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
+  padding: clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 16px);
   background: rgba(255,255,255,0.5);
   border-radius: 12px;
   margin-bottom: 10px;
@@ -767,37 +959,37 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 }
 .serving-patient-info:last-child { margin-bottom: 0; }
 .patient-name {
-  font-size: 17px;
+  font-size: clamp(16px, 4vw, 17px);
   font-weight: 700;
   color: var(--text);
   margin: 0;
   line-height: 1.3;
 }
 .patient-hrn {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-muted);
   font-weight: 600;
   margin-left: 6px;
 }
 .patient-contact {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-muted);
   font-weight: 500;
   margin-left: auto;
 }
 .patient-reason {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-muted);
   font-style: italic;
 }
 .patient-timespend {
-  font-size: 14px;
+  font-size: clamp(13px, 3vw, 14px);
   color: var(--text-muted);
   font-weight: 600;
   margin-left: 10px;
 }
 .patient-doctor {
-  font-size: 13px;
+  font-size: clamp(12px, 3vw, 13px);
   color: #64748b;
 }
 .serving-actions {
@@ -805,6 +997,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   gap: 8px;
   align-self: flex-end;
   margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .modal {
   background: var(--card-bg);
@@ -1005,13 +1199,6 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 }
 .next-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #16a34a; color: #fff; font-size: 11px; font-weight: 700; animation: next-pulse 1.2s ease-in-out infinite; }
 @keyframes next-pulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(22,163,74,0.6); } 50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(22,163,74,0); } }
-
-.queue-item-minimal { flex-direction: column; align-items: flex-start; }
-.next-badge-row { margin-bottom: 6px; }
-
-.queue-details-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-.queue-item-minimal { padding: 6px 10px; margin-bottom: 4px; gap: 8px; font-size: 13px; }
 
 .serving-item.shake { animation: shake 0.15s linear 66; }
 @keyframes shake { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-2px,1px) rotate(-1deg); } 50% { transform: translate(2px,-1px) rotate(1deg); } 75% { transform: translate(-1px,2px) rotate(-0.5deg); } 100% { transform: translate(1px,-2px) rotate(0.5deg); } }
