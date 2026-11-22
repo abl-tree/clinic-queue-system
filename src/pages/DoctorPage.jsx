@@ -94,6 +94,17 @@ export default function DoctorPage({ doctorId } = {}) {
             </button>
             <button
               type="button"
+              onClick={() => {
+                if (!('speechSynthesis' in window)) return
+                const msg = `${currentServing?.name || 'patient'}.`
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg))
+              }}
+              className="btn btn-primary btn-sm"
+            >
+              Recall
+            </button>
+            <button
+              type="button"
               onClick={() => donePatient(currentDoctorId)}
               className="btn btn-success btn-sm"
               style={{ background: '#16a34a', borderColor: '#16a34a' }}
