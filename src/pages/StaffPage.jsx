@@ -26,6 +26,18 @@ export default function StaffPage() {
   const [newDoctorSpecialty, setNewDoctorSpecialty] = useState('Internal Medicine')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [doctorToClear, setDoctorToClear] = useState(null)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(null)
+
+  const confirmRemovePatient = async (id) => {
+    try {
+      await removePatient(selectedDoctor, id)
+      setShowRemoveConfirm(null)
+    } catch (err) {
+      setShowRemoveConfirm(null)
+    }
+  }
+
+  const cancelRemovePatient = () => setShowRemoveConfirm(null)
 
   const capitalize = (str) => {
     if (!str) return ''
@@ -203,6 +215,23 @@ export default function StaffPage() {
                     </div>
                   </div>
                 )}
+                {showRemoveConfirm && (
+                  <div className="modal-overlay" onClick={cancelRemovePatient}>
+                    <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, width: '90vw' }}>
+                      <div className="modal-header">
+                        <h3>Confirm Remove Patient</h3>
+                        <button className="btn-close" onClick={cancelRemovePatient}>×</button>
+                      </div>
+                      <div className="modal-body">
+                        <p style={{ margin: 0, fontSize: 14 }}>Are you sure you want to remove this patient from the queue? This cannot be undone.</p>
+                      </div>
+                      <div className="modal-footer">
+                        <button type="button" className="btn btn-ghost" onClick={cancelRemovePatient}>Cancel</button>
+                        <button type="button" className="btn btn-danger" onClick={() => { confirmRemovePatient(showRemoveConfirm) }}>Remove</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -222,7 +251,7 @@ export default function StaffPage() {
                   </div>
                   <span className="time">{patient.timestamp}</span>
                   <button
-                    onClick={() => removePatient(selectedDoctor, patient.id)}
+                    onClick={() => setShowRemoveConfirm(patient.id)}
                     className="btn btn-ghost btn-sm"
                     title="Remove"
                   >

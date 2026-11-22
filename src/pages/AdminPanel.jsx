@@ -50,6 +50,8 @@ export default function AdminPanel() {
   const [showAddDoctor, setShowAddDoctor] = useState(false)
   const [showAddStaff, setShowAddStaff] = useState(false)
   const [showAddPatient, setShowAddPatient] = useState(false)
+  const [showConfirmDeleteDoctor, setShowConfirmDeleteDoctor] = useState(null)
+  const [showConfirmDeleteStaff, setShowConfirmDeleteStaff] = useState(null)
   const [newPatient, setNewPatient] = useState({ hrn: '', name: '', contact: '', reason: '' })
 
   useEffect(() => {
@@ -141,14 +143,38 @@ export default function AdminPanel() {
   }
 
   const handleDeleteDoctor = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this doctor?')) return
+    setShowConfirmDeleteDoctor(id)
+  }
+
+  const confirmDeleteDoctor = async () => {
+    if (!showConfirmDeleteDoctor) return
     try {
-      await deleteDoctor(id)
+      await deleteDoctor(showConfirmDeleteDoctor)
+      setShowConfirmDeleteDoctor(null)
       showToast('Doctor deleted')
     } catch (err) {
       showToast('Failed to delete doctor')
     }
   }
+
+  const cancelDeleteDoctor = () => setShowConfirmDeleteDoctor(null)
+
+  const handleDeleteStaff = async (id) => {
+    setShowConfirmDeleteStaff(id)
+  }
+
+  const confirmDeleteStaff = async () => {
+    if (!showConfirmDeleteStaff) return
+    try {
+      await deleteStaff(showConfirmDeleteStaff)
+      setShowConfirmDeleteStaff(null)
+      showToast('Staff deleted')
+    } catch (err) {
+      showToast('Failed to delete staff')
+    }
+  }
+
+  const cancelDeleteStaff = () => setShowConfirmDeleteStaff(null)
 
   const handleAddDoctor = async (e) => {
     e.preventDefault()
@@ -202,16 +228,6 @@ export default function AdminPanel() {
       showToast('Staff added')
     } catch (err) {
       showToast(err.message || 'Failed to add staff')
-    }
-  }
-
-  const handleDeleteStaff = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this staff?')) return
-    try {
-      await deleteStaff(id)
-      showToast('Staff deleted')
-    } catch (err) {
-      showToast('Failed to delete staff')
     }
   }
 
@@ -584,6 +600,44 @@ export default function AdminPanel() {
                   <button type="submit" className="btn btn-primary">Add Patient</button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirmDeleteDoctor && (
+        <div className="modal-overlay" onClick={cancelDeleteDoctor}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, width: '85vw' }}>
+            <div className="modal-header">
+              <h3>Confirm Delete Doctor</h3>
+              <button className="btn-close" onClick={cancelDeleteDoctor}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this doctor?</p>
+              <p style={{ color: '#dc2626', fontWeight: 600, marginBottom: 0 }}>This cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="btn btn-ghost" onClick={cancelDeleteDoctor}>Cancel</button>
+              <button type="button" className="btn btn-danger" onClick={confirmDeleteDoctor}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirmDeleteStaff && (
+        <div className="modal-overlay" onClick={cancelDeleteStaff}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, width: '85vw' }}>
+            <div className="modal-header">
+              <h3>Confirm Delete Staff</h3>
+              <button className="btn-close" onClick={cancelDeleteStaff}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this staff?</p>
+              <p style={{ color: '#dc2626', fontWeight: 600, marginBottom: 0 }}>This cannot be undone.</p>
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="btn btn-ghost" onClick={cancelDeleteStaff}>Cancel</button>
+              <button type="button" className="btn btn-danger" onClick={confirmDeleteStaff}>Delete</button>
             </div>
           </div>
         </div>
