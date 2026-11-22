@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
+import { useState, useEffect } from 'react'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
@@ -12,12 +13,34 @@ const Breadcrumb = ({ items }) => (
   </nav>
 )
 
+const formatTimeSpend = (startedAt) => {
+  if (!startedAt) return '0:00'
+  const start = startedAt.toDate ? startedAt.toDate() : new Date(startedAt)
+  const now = new Date()
+  const diffMs = now - start
+  const minutes = Math.floor(diffMs / 60000)
+  const seconds = Math.floor((diffMs % 60000) / 1000)
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
+
 export default function DoctorPage({ doctorId } = {}) {
   const { doctors, queues, serving, loading, serveNext, servePatient, skipPatient, donePatient } = useQueue()
   const currentDoctorId = doctorId
   const doctor = doctors.find(d => d.id === currentDoctorId)
   const queue = queues[currentDoctorId] || []
   const currentServing = serving[currentDoctorId]
+  const [timeSpend, setTimeSpend] = useState('0:00')
+
+  useEffect(() => {
+    if (!currentServing?.startedAt) {
+      setTimeSpend('0:00')
+      return
+    }
+    const interval = setInterval(() => {
+      setTimeSpend(formatTimeSpend(currentServing.startedAt))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [currentServing?.startedAt])
 
   if (loading) return (
     <div className="page doctor-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
@@ -56,21 +79,26 @@ export default function DoctorPage({ doctorId } = {}) {
             {currentServing.reason && (
               <span className="patient-reason">{currentServing.reason}</span>
             )}
+            {currentServing.startedAt && (
+              <span className="patient-timespend">Time: {timeSpend}</span>
+            )}
           </div>
           <div className="serving-actions">
             <button
               type="button"
               onClick={() => skipPatient(currentDoctorId)}
-              className="btn btn-danger btn-sm"
+              className="btn btn-warning btn-sm"
+              style={{ background: '#f59e0b', borderColor: '#f59e0b' }}
             >
               Skip
             </button>
             <button
               type="button"
               onClick={() => donePatient(currentDoctorId)}
-              className="btn btn-primary btn-sm"
+              className="btn btn-success btn-sm"
+              style={{ background: '#16a34a', borderColor: '#16a34a' }}
             >
-              Done
+              Done/Next
             </button>
           </div>
         </section>

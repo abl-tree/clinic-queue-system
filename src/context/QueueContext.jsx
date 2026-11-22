@@ -373,7 +373,8 @@ export function QueueProvider({ children }) {
 
       await updateDoc(doc(db, 'queues', doctorId, 'patients', nextPatientDoc.id), {
         status: 'serving',
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        servedAt: serverTimestamp()
       })
 
       await setDoc(doc(db, 'serving', doctorId), {
@@ -420,7 +421,8 @@ export function QueueProvider({ children }) {
 
       await updateDoc(doc(db, 'queues', doctorId, 'patients', patientId), {
         status: 'serving',
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        servedAt: serverTimestamp()
       })
 
       await setDoc(doc(db, 'serving', doctorId), {
@@ -467,7 +469,8 @@ export function QueueProvider({ children }) {
         await updateDoc(doc(db, 'queues', doctorId, 'patients', currentServing.id), {
           status: 'waiting',
           position: 1,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          endAt: null
         })
 
         // Shift all waiting patients down by 1 position
@@ -486,7 +489,8 @@ export function QueueProvider({ children }) {
         // Serve the first waiting patient immediately
         await updateDoc(doc(db, 'queues', doctorId, 'patients', firstPatientDoc.id), {
           status: 'serving',
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          servedAt: serverTimestamp()
         })
 
         await setDoc(doc(db, 'serving', doctorId), {
@@ -507,7 +511,8 @@ export function QueueProvider({ children }) {
         await updateDoc(doc(db, 'queues', doctorId, 'patients', currentServing.id), {
           status: 'waiting',
           position: 1,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          endAt: null
         })
         await deleteDoc(servingRef)
       }
@@ -532,7 +537,8 @@ export function QueueProvider({ children }) {
       // Mark current patient as completed
       await updateDoc(doc(db, 'queues', doctorId, 'patients', currentServing.id), {
         status: 'completed',
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        endAt: serverTimestamp()
       })
 
       // Remove from serving
@@ -547,7 +553,8 @@ export function QueueProvider({ children }) {
 
         await updateDoc(doc(db, 'queues', doctorId, 'patients', nextPatientDoc.id), {
           status: 'serving',
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          servedAt: serverTimestamp()
         })
 
         await setDoc(doc(db, 'serving', doctorId), {

@@ -55,8 +55,24 @@ export default function QueueListPage() {
 
   const waitingPatients = allPatients.filter(p => p.status === 'waiting' && !servingIds.has(p.id))
 
+  const byDoctor = {}
+  waitingPatients.forEach(p => {
+    if (!byDoctor[p.doctorId]) byDoctor[p.doctorId] = []
+    byDoctor[p.doctorId].push(p)
+  })
+  Object.values(byDoctor).forEach(list => list.sort((a, b) => (a.queueNumber || 0) - (b.queueNumber || 0)))
+
   const filtered = filterDoctor === 'all'
-    ? waitingPatients.sort((a, b) => (a.queueNumber || 0) - (b.queueNumber || 0))
+    ? (() => {
+        const result = []
+        const maxLen = Math.max(...Object.values(byDoctor).map(list => list.length))
+        for (let i = 0; i < maxLen; i++) {
+          Object.values(byDoctor).forEach(list => {
+            if (list[i]) result.push(list[i])
+          })
+        }
+        return result
+      })()
     : waitingPatients.filter(p => p.doctorId === filterDoctor).sort((a, b) => (a.queueNumber || 0) - (b.queueNumber || 0))
 
   return (
@@ -64,7 +80,7 @@ export default function QueueListPage() {
       <div className="two-col">
         <div className="col now-serving">
           <div className="serving-section">
-            <h3 className="serving-section-title">Now Serving</h3>
+            <div className="serving-badge">NOW SERVING</div>
             {servingPatients.length === 0 ? (
               <p className="empty">No patients being served.</p>
             ) : (
@@ -97,11 +113,15 @@ export default function QueueListPage() {
             <div className="queue-list">
               {filtered.map((patient) => {
                 const queueNumber = patient.queueNumber !== undefined ? patient.queueNumber : (patient.position !== undefined ? patient.position + 1 : '—')
+                const isNext = byDoctor[patient.doctorId] && byDoctor[patient.doctorId][0]?.id === patient.id
                 return (
                   <div key={patient.id} className={`queue-item-minimal ${patient.status}`}>
-                    <span className="queue-number">#{queueNumber}</span>
-                    <span className="patient-name-minimal">{patient.name || 'Patient'}</span>
-                    {patient.doctorName && <span className="patient-doctor-minimal">with {patient.doctorName}</span>}
+                    {isNext && <div className="next-badge-row"><span className="next-badge">You're next</span></div>}
+                    <div className="queue-details-row">
+                      <span className="queue-number">#{queueNumber}</span>
+                      <span className="patient-name-minimal">{patient.name || 'Patient'}</span>
+                      {patient.doctorName && <span className="patient-doctor-minimal">with {patient.doctorName}</span>}
+                    </div>
                   </div>
                 )
               })}

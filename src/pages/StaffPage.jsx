@@ -27,6 +27,12 @@ export default function StaffPage() {
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [doctorToClear, setDoctorToClear] = useState(null)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(null)
+  const [toast, setToast] = useState(null)
+
+  const showToast = (msg) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3000)
+  }
 
   const confirmRemovePatient = async (id) => {
     try {
@@ -94,6 +100,7 @@ export default function StaffPage() {
       contact: capitalize(formData.contact),
       reason: capitalize(formData.reason)
     })
+    showToast('Patient added to queue')
     setFormData({ hrn: '', name: '', contact: '', reason: '' })
     setPatientFound(false)
   }
@@ -125,6 +132,10 @@ export default function StaffPage() {
           </div>
         </div>
       </header>
+
+      <div className="toast-container">
+        {toast && <div className="toast">{toast}</div>}
+      </div>
 
       <div className="content-grid">
         <section className="card add-patient-card">
@@ -195,7 +206,7 @@ export default function StaffPage() {
             <h2>Queue for {currentDoctor?.name} ({currentQueue.length})</h2>
             {currentQueue.length > 0 && (
               <>
-                <button onClick={() => { setDoctorToClear(selectedDoctor); setShowClearConfirm(true) }} className="btn btn-danger btn-sm">
+                <button onClick={() => { setDoctorToClear(selectedDoctor); setShowClearConfirm(true) }} className="btn btn-danger btn-sm" style={{ background: '#dc2626', borderColor: '#dc2626' }}>
                   Clear Queue
                 </button>
                 {showClearConfirm && doctorToClear && (
@@ -210,7 +221,7 @@ export default function StaffPage() {
                       </div>
                       <div className="modal-footer">
                         <button type="button" className="btn btn-ghost" onClick={() => setShowClearConfirm(false)}>Cancel</button>
-                        <button type="button" className="btn btn-danger" onClick={() => { clearQueue(doctorToClear); setShowClearConfirm(false); setDoctorToClear(null) }}>Clear Queue</button>
+                        <button type="button" className="btn btn-danger" onClick={() => { clearQueue(doctorToClear); setShowClearConfirm(false); setDoctorToClear(null) }} style={{ background: '#dc2626', borderColor: '#dc2626' }}>Clear Queue</button>
                       </div>
                     </div>
                   </div>
@@ -227,7 +238,7 @@ export default function StaffPage() {
                       </div>
                       <div className="modal-footer">
                         <button type="button" className="btn btn-ghost" onClick={cancelRemovePatient}>Cancel</button>
-                        <button type="button" className="btn btn-danger" onClick={() => { confirmRemovePatient(showRemoveConfirm) }}>Remove</button>
+                        <button type="button" className="btn btn-danger" onClick={() => { confirmRemovePatient(showRemoveConfirm) }} style={{ background: '#dc2626', borderColor: '#dc2626' }}>Remove</button>
                       </div>
                     </div>
                   </div>
@@ -254,6 +265,7 @@ export default function StaffPage() {
                     onClick={() => setShowRemoveConfirm(patient.id)}
                     className="btn btn-ghost btn-sm"
                     title="Remove"
+                    style={{ color: '#dc2626' }}
                   >
                     ×
                   </button>

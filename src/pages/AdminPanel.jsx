@@ -355,7 +355,7 @@ export default function AdminPanel() {
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <button onClick={() => startEdit(doctor.id)} className="btn btn-ghost btn-sm">Edit</button>
                         <button onClick={() => startReset(doctor.id)} className="btn btn-ghost btn-sm">Reset Password</button>
-                        <button onClick={() => handleDeleteDoctor(doctor.id)} className="btn btn-danger btn-sm">Delete</button>
+                        <button onClick={() => handleDeleteDoctor(doctor.id)} className="btn btn-danger btn-sm" style={{ background: '#dc2626', borderColor: '#dc2626' }}>Delete</button>
                       </div>
                     )}
 
@@ -419,7 +419,7 @@ export default function AdminPanel() {
                     ) : (
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <button onClick={() => startStaffEdit(staff.id)} className="btn btn-ghost btn-sm">Edit</button>
-                        <button onClick={() => handleDeleteStaff(staff.id)} className="btn btn-danger btn-sm">Delete</button>
+                        <button onClick={() => handleDeleteStaff(staff.id)} className="btn btn-danger btn-sm" style={{ background: '#dc2626', borderColor: '#dc2626' }}>Delete</button>
                       </div>
                     )}
                   </div>
@@ -618,7 +618,7 @@ export default function AdminPanel() {
             </div>
             <div className="modal-actions">
               <button type="button" className="btn btn-ghost" onClick={cancelDeleteDoctor}>Cancel</button>
-              <button type="button" className="btn btn-danger" onClick={confirmDeleteDoctor}>Delete</button>
+              <button type="button" className="btn btn-danger" onClick={confirmDeleteDoctor} style={{ background: '#dc2626', borderColor: '#dc2626' }}>Delete</button>
             </div>
           </div>
         </div>
@@ -637,7 +637,7 @@ export default function AdminPanel() {
             </div>
             <div className="modal-actions">
               <button type="button" className="btn btn-ghost" onClick={cancelDeleteStaff}>Cancel</button>
-              <button type="button" className="btn btn-danger" onClick={confirmDeleteStaff}>Delete</button>
+              <button type="button" className="btn btn-danger" onClick={confirmDeleteStaff} style={{ background: '#dc2626', borderColor: '#dc2626' }}>Delete</button>
             </div>
           </div>
         </div>

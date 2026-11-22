@@ -1,18 +1,18 @@
 :root {
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --success: #22c55e;
-  --success-hover: #16a34a;
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
-  --warning: #f59e0b;
-  --bg: #f1f5f9;
+  --primary: #E27193;
+  --primary-hover: #C55A83;
+  --success: #E27193;
+  --success-hover: #C55A83;
+  --danger: #C55A83;
+  --danger-hover: #A84069;
+  --warning: #E27193;
+  --bg: #FBF3F4;
   --card-bg: #ffffff;
-  --border: #e2e8f0;
-  --text: #1e293b;
-  --text-muted: #64748b;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.1);
+  --border: #E2B9C9;
+  --text: #60344A;
+  --text-muted: #8A5A6E;
+  --shadow: 0 1px 3px rgba(96, 52, 74, 0.08);
+  --shadow-lg: 0 10px 25px -5px rgba(96, 52, 74, 0.1);
   --radius: 16px;
   --radius-sm: 10px;
   --transition: 0.2s ease;
@@ -157,7 +157,7 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus { 
   outline: none; 
   border-color: var(--primary); 
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.15); 
+  box-shadow: 0 0 0 3px rgba(226, 113, 147, 0.15); 
 }
 input::placeholder { color: var(--text-muted); opacity: 0.7; }
 input:disabled { background: var(--bg); color: var(--text-muted); cursor: not-allowed; }
@@ -182,7 +182,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 
 .patient-found-badge {
   font-size: 12px; 
-  color: var(--success); 
+  color: #16a34a; 
   font-weight: 500;
   background: #dcfce7; 
   padding: 6px 12px; 
@@ -293,7 +293,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   font-weight: 700; 
   font-size: 13px; 
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(59,130,246,0.3);
+  box-shadow: 0 2px 4px rgba(226, 113, 147, 0.3);
 }
 
 .patient-info { flex: 1; min-width: 0; }
@@ -332,14 +332,14 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 
 /* Serving Section */
 .serving-section {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-  border: 3px solid var(--success);
+  background: linear-gradient(135deg, #FBE9EE 0%, #FCE4EC 100%);
+  border: 3px solid var(--primary);
   border-radius: 24px;
   padding: 32px 24px;
   margin-bottom: 32px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 20px 40px -10px rgba(226, 113, 147, 0.3);
   animation: slideUp 0.4s ease;
 }
 .serving-section::before {
@@ -347,7 +347,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 8px;
-  background: linear-gradient(90deg, var(--success), var(--success-hover));
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
 }
 .serving-section h3,
 .serving-section-title {
@@ -358,12 +358,12 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--success);
+  background: var(--primary);
   padding: 10px 20px;
   border-radius: 30px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 12px rgba(226, 113, 147, 0.4);
   animation: pulse 2s infinite;
 }
 .serving-list {
@@ -386,34 +386,34 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 .serving-item .patient-number {
   font-size: 28px;
   font-weight: 900;
-  color: #2563eb;
-  background: #eff6ff;
+  color: var(--primary);
+  background: #FBE9EE;
   padding: 4px 10px;
   border-radius: 8px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--border);
   margin: 0;
 }
 .serving-item .patient-name {
   font-size: 30px;
   font-weight: 800;
-  color: #166534;
+  color: var(--text);
   margin: 0;
   line-height: 1.1;
 }
 .serving-item .patient-contact {
   font-size: 16px;
-  color: #15803d;
+  color: var(--text-muted);
   font-weight: 600;
 }
 .serving-item .patient-reason {
   font-size: 15px;
-  color: #15803d;
+  color: var(--text-muted);
   font-style: italic;
   max-width: 600px;
 }
 .serving-item .patient-doctor {
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -446,13 +446,13 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 .btn:active:not(:disabled) { transform: scale(0.98); }
 
 .btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(226, 113, 147, 0.3); }
 
 .btn-danger { background: var(--danger); color: white; }
-.btn-danger:hover:not(:disabled) { background: var(--danger-hover); box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+.btn-danger:hover:not(:disabled) { background: var(--danger-hover); box-shadow: 0 4px 12px rgba(226, 113, 147, 0.3); }
 
 .btn-success { background: var(--success); color: white; }
-.btn-success:hover:not(:disabled) { background: var(--success-hover); box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
+.btn-success:hover:not(:disabled) { background: var(--success-hover); box-shadow: 0 4px 12px rgba(226, 113, 147, 0.3); }
 
 .btn-ghost { 
   background: transparent; 
@@ -517,8 +517,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   cursor: pointer; 
   transition: all var(--transition);
 }
-.role-option:hover { border-color: var(--primary); background: rgba(59,130,246,0.03); }
-.role-option.selected { border-color: var(--primary); background: rgba(59,130,246,0.08); }
+.role-option:hover { border-color: var(--primary); background: rgba(226, 113, 147, 0.03); }
+.role-option.selected { border-color: var(--primary); background: rgba(226, 113, 147, 0.08); }
 .role-content { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .role-icon { font-size: 26px; line-height: 1; }
 .role-label { font-weight: 600; font-size: 16px; line-height: 1.3; }
@@ -530,13 +530,13 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   flex-shrink: 0;
   width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(59,130,246,0.1);
+  background: rgba(226, 113, 147, 0.1);
   border-radius: 50%;
 }
 
 .doctor-select { margin-bottom: 24px; }
 .doctor-select label { display: block; font-weight: 500; margin-bottom: 10px; font-size: 14px; }
-.login-error { color: var(--danger, #ef4444); font-size: 13px; margin-top: 6px; display: block; }
+.login-error { color: var(--danger); font-size: 13px; margin-top: 6px; display: block; }
 
 /* Search Card */
 .search-card { max-width: 500px; margin: 0 auto clamp(20px, 4vw, 24px); }
@@ -563,8 +563,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.status-badge.waiting { background: #fef3c7; color: #92400e; }
-.status-badge.serving { background: #dcfce7; color: #166534; animation: pulse 2s infinite; }
+.status-badge.waiting { background: #FBE9EE; color: var(--text); }
+.status-badge.serving { background: #FBE9EE; color: var(--text); animation: pulse 2s infinite; }
 .doctor-name { color: var(--text-muted); font-size: 14px; font-weight: 500; }
 
 .patient-details h2 { 
@@ -700,7 +700,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   appearance: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
-.doctor-filter select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.doctor-filter select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(226, 113, 147, 0.15); }
 .doctor-filter select option { padding: 10px; font-size: 14px; }
 
 .filter-empty {
@@ -712,14 +712,14 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 
 /* DoctorPage - Serving Window */
 .serving-window {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-  border: 3px solid var(--success);
+  background: linear-gradient(135deg, #FBE9EE 0%, #FCE4EC 100%);
+  border: 3px solid var(--primary);
   border-radius: 24px;
   padding: 32px 24px;
   margin-bottom: 32px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 20px 40px -10px rgba(226, 113, 147, 0.3);
   animation: slideUp 0.4s ease;
 }
 .serving-window::before {
@@ -727,13 +727,13 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 8px;
-  background: linear-gradient(90deg, var(--success), var(--success-hover));
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
 }
 .serving-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--success);
+  background: var(--primary);
   color: white;
   padding: 10px 20px;
   border-radius: 30px;
@@ -742,7 +742,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 12px rgba(226, 113, 147, 0.4);
   animation: pulse 2s infinite;
 }
 .serving-badge::before {
@@ -752,6 +752,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   border-radius: 50%;
   animation: pulse-fast 1.5s infinite;
 }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 @keyframes pulse-fast { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }
 .serving-patient-info {
   display: flex;
@@ -768,26 +769,32 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 .patient-name {
   font-size: 17px;
   font-weight: 700;
-  color: #166534;
+  color: var(--text);
   margin: 0;
   line-height: 1.3;
 }
 .patient-hrn {
   font-size: 14px;
-  color: #15803d;
+  color: var(--text-muted);
   font-weight: 600;
   margin-left: 6px;
 }
 .patient-contact {
   font-size: 14px;
-  color: #16a34a;
+  color: var(--text-muted);
   font-weight: 500;
   margin-left: auto;
 }
 .patient-reason {
   font-size: 14px;
-  color: #15803d;
+  color: var(--text-muted);
   font-style: italic;
+}
+.patient-timespend {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-left: 10px;
 }
 .patient-doctor {
   font-size: 13px;
@@ -912,7 +919,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 .modal-form-group input:focus,
 .modal-form-group select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(226, 113, 147, 0.1);
 }
 .modal-form-group select {
   appearance: none;
@@ -996,3 +1003,18 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   .card { box-shadow: none; border: 1px solid #ccc; }
   .queue-item { break-inside: avoid; }
 }
+.next-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #16a34a; color: #fff; font-size: 11px; font-weight: 700; animation: next-pulse 1.2s ease-in-out infinite; }
+@keyframes next-pulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(22,163,74,0.6); } 50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(22,163,74,0); } }
+
+.queue-item-minimal { flex-direction: column; align-items: flex-start; }
+.next-badge-row { margin-bottom: 6px; }
+
+.queue-details-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.queue-item-minimal { padding: 6px 10px; margin-bottom: 4px; gap: 8px; font-size: 13px; }
+
+.serving-item.shake { animation: shake 0.15s linear 66; }
+@keyframes shake { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-2px,1px) rotate(-1deg); } 50% { transform: translate(2px,-1px) rotate(1deg); } 75% { transform: translate(-1px,2px) rotate(-0.5deg); } 100% { transform: translate(1px,-2px) rotate(0.5deg); } }
+
+
+
