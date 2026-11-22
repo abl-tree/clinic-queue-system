@@ -15,21 +15,77 @@ const Breadcrumb = ({ items }) => (
   </nav>
 )
 
+function speakText(text) {
+  if (!text || !('speechSynthesis' in window)) return
+  const synth = window.speechSynthesis
+  // Cancel any pending speech to prevent queue buildup
+  synth.cancel()
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.rate = 1
+  utterance.pitch = 1
+  utterance.volume = 1
+  synth.speak(utterance)
+}
+
 export default function QueueListPage() {
   const { queues, serving, doctors } = useQueue()
+  const isVisibleRef = useRef(true)
+  const hasSpokenRef = useRef({})
+  const unsubRef = useRef(null)
+
+  // Track page visibility - only listen for announcements when visible
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'announcements'), (snap) => {
-      snap.docChanges().forEach((c) => {
-        if (c.type === 'added') {
-          const text = c.doc.data().text
-          if (text && 'speechSynthesis' in window) {
-            window.speechSynthesis.speak(new SpeechSynthesisUtterance(text))
-          }
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = !document.hidden
+      
+      if (document.hidden) {
+        // Detach listener when hidden - no speech queued at all
+        if (unsubRef.current) {
+          unsubRef.current()
+          unsubRef.current = null
         }
+        // Cancel any pending speech
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel()
+        }
+      } else {
+        // Attach listener when visible
+        if (!unsubRef.current) {
+          unsubRef.current = onSnapshot(collection(db, 'announcements'), (snap) => {
+            snap.docChanges().forEach((c) => {
+              if (c.type === 'added' && isVisibleRef.current) {
+                const text = c.doc.data().text
+                speakText(text)
+              }
+            })
+          })
+        }
+        // Reset spoken tracking when page becomes visible
+        hasSpokenRef.current = {}
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    // Initial subscription if visible
+    if (!document.hidden) {
+      unsubRef.current = onSnapshot(collection(db, 'announcements'), (snap) => {
+        snap.docChanges().forEach((c) => {
+          if (c.type === 'added' && isVisibleRef.current) {
+            const text = c.doc.data().text
+            speakText(text)
+          }
+        })
       })
-    })
-    return () => unsub()
+    }
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      if (unsubRef.current) {
+        unsubRef.current()
+      }
+    }
   }, [])
+
   const prevServingRef = useRef({})
   const [filterDoctor, setFilterDoctor] = useState('all')
   const allPatients = []
@@ -95,14 +151,18 @@ export default function QueueListPage() {
     const next = {}
     Object.keys(serving).forEach((doctorId) => {
       next[doctorId] = serving[doctorId]?.id
-      if (prev[doctorId] !== next[doctorId] && 'speechSynthesis' in window) {
+      if (prev[doctorId] !== next[doctorId] && isVisibleRef.current) {
         const s = serving[doctorId]
         const doc = doctors.find(d => d.id === doctorId)
         const q = (queues[doctorId] || []).filter(p => p.id !== s?.id).sort((a,b) => (a.queueNumber||0)-(b.queueNumber||0))
         const nxt = q[0]
         const msg = `${doc ? doc.name : 'Doctor'} now serving ${s?.name || 'patient'}. Next: ${nxt ? (nxt.name || 'patient') : 'none'}.`
-        const u = new SpeechSynthesisUtterance(msg)
-        window.speechSynthesis.speak(u)
+        const key = `${doctorId}-${s?.id}`
+        // Prevent duplicate announcements for the same patient
+        if (!hasSpokenRef.current[key]) {
+          hasSpokenRef.current[key] = true
+          speakText(msg)
+        }
       }
     })
     prevServingRef.current = next
@@ -114,7 +174,7 @@ export default function QueueListPage() {
         <div className="col now-serving">
 <div className="serving-section">
             <div className="serving-badge">NOW SERVING</div>
-            <button className="sound-toggle" onClick={() => { if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('Sound enabled')) }} aria-label="Enable sound announcements">🔊</button>
+            <button className="sound-toggle" onClick={() => speakText('Sound enabled')} aria-label="Enable sound announcements">🔊</button>
             {servingPatients.length === 0 ? (
               <p className="empty">No patients being served.</p>
             ) : (

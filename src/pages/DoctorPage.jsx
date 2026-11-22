@@ -2,7 +2,7 @@ import { useQueue } from '../context/QueueContext'
 import { Link } from 'react-router-dom'
 import { db } from '../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
@@ -14,6 +14,17 @@ const Breadcrumb = ({ items }) => (
     ))}
   </nav>
 )
+
+function speakText(text) {
+  if (!text || !('speechSynthesis' in window)) return
+  const synth = window.speechSynthesis
+  synth.cancel()
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.rate = 1
+  utterance.pitch = 1
+  utterance.volume = 1
+  synth.speak(utterance)
+}
 
 const formatTimeSpend = (startedAt) => {
   if (!startedAt) return '0:00'
@@ -32,6 +43,23 @@ export default function DoctorPage({ doctorId } = {}) {
   const queue = queues[currentDoctorId] || []
   const currentServing = serving[currentDoctorId]
   const [timeSpend, setTimeSpend] = useState('0:00')
+  const isVisibleRef = useRef(true)
+  const hasSpokenRef = useRef({})
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = !document.hidden
+      if (document.hidden) {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel()
+        }
+      } else {
+        hasSpokenRef.current = {}
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
 
   useEffect(() => {
     if (!currentServing?.startedAt) {
@@ -43,6 +71,18 @@ export default function DoctorPage({ doctorId } = {}) {
     }, 1000)
     return () => clearInterval(interval)
   }, [currentServing?.startedAt])
+
+  // Announce when a new patient starts being served
+  useEffect(() => {
+    if (currentServing && isVisibleRef.current) {
+      const key = `${currentDoctorId}-${currentServing.id}`
+      if (!hasSpokenRef.current[key]) {
+        hasSpokenRef.current[key] = true
+        const msg = `${currentServing.name || 'Patient'}.`
+        speakText(msg)
+      }
+    }
+  }, [currentServing?.id, currentDoctorId])
 
   if (loading) return (
     <div className="page doctor-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
@@ -67,7 +107,7 @@ export default function DoctorPage({ doctorId } = {}) {
       {currentServing && (
         <section className="serving-window">
           <div className="serving-badge">NOW SERVING</div>
-          <button className="sound-toggle" onClick={() => { if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance('Sound enabled')) }} aria-label="Enable sound announcements">🔊</button>
+          <button className="sound-toggle" onClick={() => speakText('Sound enabled')} aria-label="Enable sound announcements">🔊</button>
           <div className="serving-patient-info">
             <span className="patient-number">#{currentServing.queueNumber || '—'}</span>
             <span className="patient-name">
@@ -98,10 +138,9 @@ export default function DoctorPage({ doctorId } = {}) {
             <button
               type="button"
               onClick={async () => {
-                if (!('speechSynthesis' in window)) return
                 const msg = `${currentServing?.name || 'patient'}.`
                 try { await addDoc(collection(db, 'announcements'), { text: msg, createdAt: Date.now() }) } catch {}
-                window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg))
+                speakText(msg)
               }}
               className="btn btn-primary btn-sm"
             >
