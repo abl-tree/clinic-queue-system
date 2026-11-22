@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useQueue } from '../context/QueueContext'
+import { useSearchParams } from 'react-router-dom'
 import { registerPush } from '../lib/push'
 
 export default function PatientPage() {
   const { doctors, getPatientView, savePatientProfile } = useQueue()
+  const [searchParams] = useSearchParams()
   const [patientId, setPatientId] = useState('')
   const [contact, setContact] = useState('')
   const [view, setView] = useState(null)
@@ -23,6 +25,16 @@ export default function PatientPage() {
       setSearched(true)
     }
   }, [patientId, getPatientView])
+
+  useEffect(() => {
+    const hrnParam = searchParams.get('hrn')
+    const registerParam = searchParams.get('registerPush')
+    if (hrnParam && registerParam === '1') {
+      setPatientId(hrnParam.trim().toUpperCase())
+      setSearched(true)
+      registerPush(hrnParam.trim().toUpperCase(), 'patient')
+    }
+  }, [searchParams, registerPush, getPatientView])
 
   const handleSubmit = (e) => {
     e.preventDefault()

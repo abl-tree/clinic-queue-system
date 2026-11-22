@@ -12,6 +12,18 @@ export const doctors = []
 
 const todayKey = () => new Date().toISOString().split('T')[0]
 
+const sendNotification = async (hrn, title, body, data = {}) => {
+  try {
+    await fetch('/api/notify-patient', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hrn, title, body, data })
+    })
+  } catch (err) {
+    console.error('Error sending notification:', err)
+  }
+}
+
 export function QueueProvider({ children }) {
   const [doctors, setDoctors] = useState([])
   const [queues, setQueues] = useState({})
@@ -155,11 +167,19 @@ export function QueueProvider({ children }) {
       }
 
       await addDoc(queueRef, newPatient)
+
+      const doctor = doctors.find(d => d.id === doctorId)
+      await sendNotification(
+        hrn,
+        doctor ? `Clinic Queue - Dr. ${doctor.name}` : 'Clinic Queue',
+        `You've been added to the queue (${doctor ? doctor.name : 'your doctor'}). Queue #${queueNumber || '—'}`,
+        { doctorId, queueNumber: String(queueNumber || ''), type: 'queued' }
+      )
     } catch (err) {
       console.error('Error adding patient:', err)
       throw err
     }
-  }, [savePatientProfile])
+  }, [savePatientProfile, doctors])
 
   const serveNext = useCallback(async (doctorId) => {
     try {
@@ -196,11 +216,19 @@ export function QueueProvider({ children }) {
         startedAt: serverTimestamp()
       })
 
+      const doctor = doctors.find(d => d.id === doctorId)
+      await sendNotification(
+        nextPatient.hrn,
+        doctor ? `Clinic Queue - Dr. ${doctor.name}` : 'Clinic Queue',
+        `It's your turn! Dr. ${doctor ? doctor.name : 'your doctor'} is now seeing you.`,
+        { doctorId, type: 'serving' }
+      )
+
     } catch (err) {
       console.error('Error serving next:', err)
       throw err
     }
-  }, [])
+  }, [doctors])
 
   const skipPatient = useCallback(async (doctorId) => {
     try {
@@ -254,6 +282,14 @@ export function QueueProvider({ children }) {
           id: firstPatientDoc.id,
           startedAt: serverTimestamp()
         })
+
+        const doctor = doctors.find(d => d.id === doctorId)
+        await sendNotification(
+          firstPatientDoc.data().hrn,
+          doctor ? `Clinic Queue - Dr. ${doctor.name}` : 'Clinic Queue',
+          `It's your turn! Dr. ${doctor ? doctor.name : 'your doctor'} is now seeing you.`,
+          { doctorId, type: 'serving' }
+        )
       } else {
         // No waiting patients: just move serving patient to position 1 waiting
         await updateDoc(doc(db, 'queues', doctorId, 'patients', currentServing.id), {
@@ -268,7 +304,7 @@ export function QueueProvider({ children }) {
       console.error('Error skipping patient:', err)
       throw err
     }
-  }, [])
+  }, [doctors])
 
   const donePatient = useCallback(async (doctorId) => {
     try {
@@ -306,13 +342,21 @@ export function QueueProvider({ children }) {
           ...nextPatient,
           startedAt: serverTimestamp()
         })
+
+        const doctor = doctors.find(d => d.id === doctorId)
+        await sendNotification(
+          nextPatient.hrn,
+          doctor ? `Clinic Queue - Dr. ${doctor.name}` : 'Clinic Queue',
+          `It's your turn! Dr. ${doctor ? doctor.name : 'your doctor'} is now seeing you.`,
+          { doctorId, type: 'serving' }
+        )
       }
 
     } catch (err) {
       console.error('Error completing patient:', err)
       throw err
     }
-  }, [])
+  }, [doctors])
 
   const removePatient = useCallback(async (doctorId, patientId) => {
     try {
