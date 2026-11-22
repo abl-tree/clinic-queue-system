@@ -5,7 +5,7 @@ import {
   getDocs, writeBatch, setDoc, getDoc, increment
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { encrypt } from '../lib/crypto'
+import { encrypt, decrypt } from '../lib/crypto'
 
 const QueueContext = createContext(null)
 
@@ -27,6 +27,7 @@ const sendNotification = async (hrn, title, body, data = {}) => {
 
 export function QueueProvider({ children }) {
   const [doctors, setDoctors] = useState([])
+  const [staffs, setStaffs] = useState([])
   const [queues, setQueues] = useState({})
   const [serving, setServing] = useState({})
   const [loading, setLoading] = useState(true)
@@ -75,9 +76,19 @@ export function QueueProvider({ children }) {
       setDoctors(doctorsData)
     })
 
+    const staffsRef = collection(db, 'staffs')
+    const staffsUnsub = onSnapshot(staffsRef, (snapshot) => {
+      const staffsData = []
+      snapshot.forEach(doc => {
+        staffsData.push({ id: doc.id, ...doc.data() })
+      })
+      setStaffs(staffsData)
+    })
+
     return () => {
       servingUnsub()
       doctorsUnsub()
+      staffsUnsub()
     }
   }, [])
 
@@ -179,6 +190,50 @@ export function QueueProvider({ children }) {
       await deleteDoc(doctorRef)
     } catch (err) {
       console.error('Error deleting doctor:', err)
+      throw err
+    }
+  }, [])
+
+  const addStaff = useCallback(async (staffData) => {
+    try {
+      const { name, role, username, password } = staffData
+      const encryptedPassword = await encrypt(password || 'staff1234')
+      const staffsRef = collection(db, 'staffs')
+      const q = query(staffsRef, where('username', '==', username))
+      const snapshot = await getDocs(q)
+      if (!snapshot.empty) throw new Error('Staff username already exists')
+      await addDoc(staffsRef, {
+        name,
+        role,
+        username,
+        password: encryptedPassword,
+        createdAt: serverTimestamp()
+      })
+    } catch (err) {
+      console.error('Error adding staff:', err)
+      throw err
+    }
+  }, [])
+
+  const updateStaff = useCallback(async (staffId, updates) => {
+    try {
+      const staffRef = doc(db, 'staffs', staffId)
+      await updateDoc(staffRef, {
+        ...updates,
+        updatedAt: serverTimestamp()
+      })
+    } catch (err) {
+      console.error('Error updating staff:', err)
+      throw err
+    }
+  }, [])
+
+  const deleteStaff = useCallback(async (staffId) => {
+    try {
+      const staffRef = doc(db, 'staffs', staffId)
+      await deleteDoc(staffRef)
+    } catch (err) {
+      console.error('Error deleting staff:', err)
       throw err
     }
   }, [])
@@ -503,6 +558,7 @@ export function QueueProvider({ children }) {
 
   const value = {
     doctors,
+    staffs,
     queues,
     serving,
     loading,
@@ -513,6 +569,9 @@ export function QueueProvider({ children }) {
     resetDoctorPassword,
     changeDoctorPassword,
     deleteDoctor,
+    addStaff,
+    updateStaff,
+    deleteStaff,
     verifyAdmin,
     addAdmin,
     serveNext,
