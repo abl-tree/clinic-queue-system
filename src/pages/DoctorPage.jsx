@@ -43,8 +43,24 @@ export default function DoctorPage({ doctorId } = {}) {
   const queue = queues[currentDoctorId] || []
   const currentServing = serving[currentDoctorId]
   const [timeSpend, setTimeSpend] = useState('0:00')
+  const [recallCooldown, setRecallCooldown] = useState(0)
+  const recallCooldownRef = useRef(0)
   const isVisibleRef = useRef(true)
   const hasSpokenRef = useRef({})
+
+  // Cooldown timer
+  useEffect(() => {
+    if (recallCooldown > 0) {
+      const timer = setInterval(() => {
+        setRecallCooldown(c => {
+          const next = Math.max(0, c - 1)
+          recallCooldownRef.current = next
+          return next
+        })
+      }, 1000)
+      return () => clearInterval(timer)
+    }
+  }, [recallCooldown])
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -138,13 +154,17 @@ export default function DoctorPage({ doctorId } = {}) {
             <button
               type="button"
               onClick={async () => {
+                if (recallCooldownRef.current > 0) return
+                recallCooldownRef.current = 5
+                setRecallCooldown(5)
                 const msg = `${currentServing?.name || 'patient'}.`
                 try { await addDoc(collection(db, 'announcements'), { text: msg, createdAt: Date.now() }) } catch {}
                 speakText(msg)
               }}
               className="btn btn-primary btn-sm"
+              disabled={recallCooldown > 0}
             >
-              Recall
+              {recallCooldown > 0 ? `Recall (${recallCooldown}s)` : 'Recall'}
             </button>
             <button
               type="button"
