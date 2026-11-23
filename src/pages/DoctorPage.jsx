@@ -48,7 +48,6 @@ export default function DoctorPage({ doctorId } = {}) {
   const [doneLoading, setDoneLoading] = useState(false)
   const recallCooldownRef = useRef(0)
   const isVisibleRef = useRef(true)
-  const hasSpokenRef = useRef({})
 
   // Cooldown timer
   useEffect(() => {
@@ -71,8 +70,6 @@ export default function DoctorPage({ doctorId } = {}) {
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel()
         }
-      } else {
-        hasSpokenRef.current = {}
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -93,12 +90,8 @@ export default function DoctorPage({ doctorId } = {}) {
   // Announce when a new patient starts being served
   useEffect(() => {
     if (currentServing && isVisibleRef.current) {
-      const key = `${currentDoctorId}-${currentServing.id}`
-      if (!hasSpokenRef.current[key]) {
-        hasSpokenRef.current[key] = true
-        const msg = `You're serving ${currentServing.name || 'Patient'}.`
-        speakText(msg)
-      }
+      const msg = `You're serving ${currentServing.name || 'Patient'}.`
+      speakText(msg)
     }
   }, [currentServing?.id, currentDoctorId])
 

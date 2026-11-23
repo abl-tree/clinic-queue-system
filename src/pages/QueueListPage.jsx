@@ -35,7 +35,6 @@ export default function QueueListPage() {
   }, [])
   const { queues, serving, doctors } = useQueue()
   const isVisibleRef = useRef(true)
-  const hasSpokenRef = useRef({})
   const lastSeenRef = useRef(Date.now())
   const unsubRef = useRef(null)
 
@@ -70,8 +69,6 @@ export default function QueueListPage() {
             })
           })
         }
-        // Reset spoken tracking when page becomes visible
-        hasSpokenRef.current = {}
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -171,12 +168,7 @@ export default function QueueListPage() {
         const q = (queues[doctorId] || []).filter(p => p.id !== s?.id).sort((a,b) => (a.queueNumber||0)-(b.queueNumber||0))
         const nxt = q[0]
         const msg = `${doc ? doc.name : 'Doctor'} now serving ${s?.name || 'patient'}. Next: ${nxt ? (nxt.name || 'patient') : 'none'}.`
-        const key = `${doctorId}-${s?.id}`
-        // Prevent duplicate announcements for the same patient
-        if (!hasSpokenRef.current[key]) {
-          hasSpokenRef.current[key] = true
-          speakText(msg)
-        }
+        speakText(msg)
       }
     })
     prevServingRef.current = next
