@@ -2,7 +2,8 @@ import { db, messaging } from './_firebase.js'
 
 async function sendMessengerMessage(psid, text) {
   const pageAccessToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN
-  if (!pageAccessToken || !psid) return
+  const enabled = process.env.ENABLE_FACEBOOK_NOTIFICATION === 'true'
+  if (!enabled || !pageAccessToken || !psid) return
 
   try {
     const res = await fetch('https://graph.facebook.com/v19.0/me/messages', {
