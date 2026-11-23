@@ -541,10 +541,7 @@ export function QueueProvider({ children }) {
         endAt: serverTimestamp()
       })
 
-      // Remove from serving
-      await deleteDoc(servingRef)
-
-      // Immediately serve the next waiting patient
+      // Serve the next waiting patient (or clear serving)
       const nextQ = query(queueRef, where('status', '==', 'waiting'), orderBy('position'), orderBy('createdAt'))
       const nextSnapshot = await getDocs(nextQ)
       if (!nextSnapshot.empty) {
@@ -569,6 +566,8 @@ export function QueueProvider({ children }) {
           `It's your turn! Dr. ${doctor ? doctor.name : 'your doctor'} is now seeing you.`,
           { doctorId, type: 'serving' }
         )
+      } else {
+        await deleteDoc(servingRef)
       }
 
     } catch (err) {
