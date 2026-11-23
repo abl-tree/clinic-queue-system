@@ -38,6 +38,7 @@ export default function QueueListPage() {
   const lastSeenRef = useRef(Date.now())
   const unsubRef = useRef(null)
   const [recallFlash, setRecallFlash] = useState({})
+  const [servedFlash, setServedFlash] = useState({})
   const servingRef = useRef({})
   servingRef.current = serving
 
@@ -189,6 +190,13 @@ export default function QueueListPage() {
         const nxt = q[0]
         const msg = `${doc ? doc.name : 'Doctor'} now serving ${s?.name || 'patient'}. Next: ${nxt ? (nxt.name || 'patient') : 'none'}.`
         speakText(msg)
+        // Flash the newly served patient in the now-serving list
+        if (next[doctorId]) {
+          setServedFlash(f => ({ ...f, [next[doctorId]]: true }))
+          setTimeout(() => {
+            setServedFlash(f => { const n = { ...f }; delete n[next[doctorId]]; return n })
+          }, 1500)
+        }
       }
     })
     prevServingRef.current = next
@@ -207,7 +215,7 @@ export default function QueueListPage() {
             ) : (
               <div className="serving-list">
                 {servingPatients.map((patient) => (
-                  <div key={patient.id} className={`serving-item${recallFlash[patient.id] ? ' recall-flash' : ''}`}>
+                  <div key={patient.id} className={`serving-item${recallFlash[patient.id] ? ' recall-flash' : ''}${servedFlash[patient.id] ? ' served-flash' : ''}`}>
                     <div className="patient-info">
                       <span className="patient-number">#{patient.queueNumber !== undefined ? patient.queueNumber : '—'}</span>&nbsp;
                       <span className="patient-name">{patient.name || 'Patient'}</span>
