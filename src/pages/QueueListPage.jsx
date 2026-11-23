@@ -18,11 +18,40 @@ const Breadcrumb = ({ items }) => (
   </nav>
 )
 
+const PH_TIMEZONE = 'Asia/Manila'
+const PH_TIME_API = `https://worldtimeapi.org/api/timezone/${PH_TIMEZONE}`
+
+function fetchPhTime() {
+  return fetch(PH_TIME_API, { signal: AbortSignal.timeout(5000) })
+    .then((res) => {
+      if (!res.ok) throw new Error('ph time api failed')
+      return res.json()
+    })
+    .then((data) => new Date(data.datetime))
+    .catch(() => null)
+}
+
 export default function QueueListPage() {
   const [now, setNow] = useState(new Date())
+  const [phOffset, setPhOffset] = useState(0)
+  const [phReady, setPhReady] = useState(false)
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(t)
+    let resolved = false
+    fetchPhTime().then((serverTime) => {
+      if (resolved) return
+      resolved = true
+      if (serverTime) {
+        setPhOffset(serverTime.getTime() - Date.now())
+        setPhReady(true)
+      }
+    })
+    const t = setInterval(() => {
+      setNow(phReady ? new Date(Date.now() + phOffset) : new Date())
+    }, 1000)
+    return () => {
+      resolved = true
+      clearInterval(t)
+    }
   }, [])
   const { queues, serving, doctors, loading } = useQueue()
   const isVisibleRef = useRef(true)
