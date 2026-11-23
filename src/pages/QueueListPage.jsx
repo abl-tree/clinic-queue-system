@@ -121,6 +121,7 @@ export default function QueueListPage() {
   }, [])
 
   const prevServingRef = useRef({})
+  const initialRef = useRef(true)
   const [filterDoctor, setFilterDoctor] = useState('all')
   const allPatients = []
   const servingPatients = []
@@ -182,6 +183,14 @@ export default function QueueListPage() {
 
   useEffect(() => {
     const prev = prevServingRef.current || {}
+    // Skip announcing on initial mount to avoid speaking current serving state
+    if (initialRef.current) {
+      initialRef.current = false
+      const next = {}
+      Object.keys(serving).forEach((doctorId) => { next[doctorId] = serving[doctorId]?.id })
+      prevServingRef.current = next
+      return
+    }
     const next = {}
     Object.keys(serving).forEach((doctorId) => {
       next[doctorId] = serving[doctorId]?.id

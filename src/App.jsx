@@ -74,6 +74,7 @@ function AppRoutes() {
   }
 
   const logout = () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
     setUser(null)
     localStorage.removeItem(STORAGE_KEY)
     navigate('/login')
