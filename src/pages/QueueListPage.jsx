@@ -37,6 +37,9 @@ export default function QueueListPage() {
   const isVisibleRef = useRef(true)
   const lastSeenRef = useRef(Date.now())
   const unsubRef = useRef(null)
+  const [recallFlash, setRecallFlash] = useState({})
+  const servingRef = useRef({})
+  servingRef.current = serving
 
   // Track page visibility - only listen for announcements when visible
   useEffect(() => {
@@ -64,6 +67,15 @@ export default function QueueListPage() {
                 if (createdAt > lastSeenRef.current) {
                   lastSeenRef.current = createdAt
                   speakText(data.text)
+                  // Flash the serving patient name when recalled
+                  const curServing = Object.values(servingRef.current)
+                  const recalled = curServing.find(s => s.name && data.text.includes(s.name))
+                  if (recalled) {
+                    setRecallFlash(f => ({ ...f, [recalled.id]: true }))
+                    setTimeout(() => {
+                      setRecallFlash(f => { const n = { ...f }; delete n[recalled.id]; return n })
+                    }, 1500)
+                  }
                 }
               }
             })
@@ -83,6 +95,14 @@ export default function QueueListPage() {
               if (createdAt > lastSeenRef.current) {
                 lastSeenRef.current = createdAt
                 speakText(data.text)
+                // Flash the serving patient name when recalled
+                const recalled = servingPatients.find(p => p.name && data.text.includes(p.name))
+                if (recalled) {
+                  setRecallFlash(f => ({ ...f, [recalled.id]: true }))
+                  setTimeout(() => {
+                    setRecallFlash(f => { const n = { ...f }; delete n[recalled.id]; return n })
+                  }, 1500)
+                }
               }
             }
           })
@@ -187,7 +207,7 @@ export default function QueueListPage() {
             ) : (
               <div className="serving-list">
                 {servingPatients.map((patient) => (
-                  <div key={patient.id} className="serving-item">
+                  <div key={patient.id} className={`serving-item${recallFlash[patient.id] ? ' recall-flash' : ''}`}>
                     <div className="patient-info">
                       <span className="patient-number">#{patient.queueNumber !== undefined ? patient.queueNumber : '—'}</span>&nbsp;
                       <span className="patient-name">{patient.name || 'Patient'}</span>

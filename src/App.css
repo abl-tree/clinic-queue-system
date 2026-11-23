@@ -516,6 +516,18 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+.serving-item.recall-flash {
+  animation: recallPulse 0.8s ease-out 2;
+  background: rgba(226, 113, 147, 0.25);
+  border-color: var(--primary);
+}
+
+@keyframes recallPulse {
+  0% { background: rgba(226, 113, 147, 0.4); transform: scale(1); }
+  50% { background: rgba(226, 113, 147, 0.8); transform: scale(1.05); }
+  100% { background: rgba(255,255,255,0.6); transform: scale(1); }
+}
 .serving-item .patient-contact {
   font-size: clamp(14px, 3.5vw, 16px);
   color: var(--text-muted);
