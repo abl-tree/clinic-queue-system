@@ -44,6 +44,8 @@ export default function DoctorPage({ doctorId } = {}) {
   const currentServing = serving[currentDoctorId]
   const [timeSpend, setTimeSpend] = useState('0:00')
   const [recallCooldown, setRecallCooldown] = useState(0)
+  const [skipLoading, setSkipLoading] = useState(false)
+  const [doneLoading, setDoneLoading] = useState(false)
   const recallCooldownRef = useRef(0)
   const isVisibleRef = useRef(true)
   const hasSpokenRef = useRef({})
@@ -145,11 +147,15 @@ export default function DoctorPage({ doctorId } = {}) {
           <div className="serving-actions">
             <button
               type="button"
-              onClick={() => skipPatient(currentDoctorId)}
+              onClick={async () => {
+                setSkipLoading(true)
+                try { await skipPatient(currentDoctorId) } finally { setSkipLoading(false) }
+              }}
               className="btn btn-warning btn-sm"
               style={{ background: '#f59e0b', borderColor: '#f59e0b' }}
+              disabled={skipLoading}
             >
-              Skip
+              {skipLoading && <span className="loading-spinner" />} Skip
             </button>
             <button
               type="button"
@@ -168,11 +174,15 @@ export default function DoctorPage({ doctorId } = {}) {
             </button>
             <button
               type="button"
-              onClick={() => donePatient(currentDoctorId)}
+              onClick={async () => {
+                setDoneLoading(true)
+                try { await donePatient(currentDoctorId) } finally { setDoneLoading(false) }
+              }}
               className="btn btn-success btn-sm"
               style={{ background: '#16a34a', borderColor: '#16a34a' }}
+              disabled={doneLoading}
             >
-              Done/Next
+              {doneLoading && <span className="loading-spinner" />} Done/Next
             </button>
           </div>
         </section>
