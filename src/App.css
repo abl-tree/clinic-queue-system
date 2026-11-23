@@ -297,6 +297,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 }
 
 .queue-item {
+  position: relative;
   display: flex; 
   align-items: center; 
   gap: 12px; 
@@ -307,6 +308,20 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
   border: 1px solid transparent;
 }
+.queue-item-remove {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  min-width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+}
 .queue-item:hover { 
   transform: translateX(4px); 
   box-shadow: var(--shadow); 
@@ -315,36 +330,24 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 }
 .queue-item:last-child { margin-bottom: 0; }
 
+.queue-section { margin-bottom: 16px; }
+.queue-section-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.queue-section-title { font-size: 16px; font-weight: 600; margin: 0; color: var(--text); }
+
 @media (max-width: 640px) {
-  .queue-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
-  }
-  .queue-item .queue-number {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
-  }
-  .queue-item .patient-info {
-    width: 100%;
-  }
-  .queue-item .patient-name {
-    font-size: 15px;
-  }
-  .queue-item .patient-meta {
-    font-size: 13px;
-  }
-  .queue-item .time {
-    display: none;
-  }
-  .queue-item .btn-sm {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 20px;
-    font-size: 15px;
-  }
+  .content-grid { grid-template-columns: 1fr; }
+  .queue-item { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; }
+  .queue-item .queue-number { width: 28px; height: 28px; font-size: 12px; }
+  .queue-item .patient-info { width: 100%; }
+  .queue-item .patient-name { font-size: 15px; }
+  .queue-item .patient-meta { font-size: 13px; }
+  .queue-item .time { display: none; }
+  .queue-item .btn-sm { width: 100%; justify-content: center; padding: 14px 20px; font-size: 15px; }
+  .queue-item .queue-item-remove { position: absolute; right: 10px; top: 10px; width: 28px; height: 28px; }
+  .queue-section { margin-bottom: 12px; }
+  .queue-section-header { flex-direction: column; align-items: stretch; }
+  .queue-section-header .btn-sm { width: 100%; }
+  .all-queues-list { columns: 1; }
 }
 
 .queue-item-minimal {

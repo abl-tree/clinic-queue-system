@@ -596,6 +596,17 @@ export function QueueProvider({ children }) {
     }
   }, [])
 
+  const clearAllQueues = useCallback(async () => {
+    try {
+      for (const doctor of doctors) {
+        await clearQueue(doctor.id)
+      }
+    } catch (err) {
+      console.error('Error clearing all queues:', err)
+      throw err
+    }
+  }, [clearQueue, doctors])
+
   const getPatientView = useCallback((patientId) => {
     const hrn = patientId.toUpperCase()
     for (const [doctorId, queue] of Object.entries(queues)) {
@@ -635,6 +646,7 @@ export function QueueProvider({ children }) {
     donePatient,
     removePatient,
     clearQueue,
+    clearAllQueues,
     getPatientView,
     getPatientProfile,
     savePatientProfile
