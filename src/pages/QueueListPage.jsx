@@ -169,7 +169,7 @@ export default function QueueListPage() {
   }, [serving, queues, doctors])
 
   return (
-    <div className="page queue-list-page">
+    <div className="page queue-list-page full-width">
       <div className="two-col">
         <div className="col now-serving">
 <div className="serving-section">

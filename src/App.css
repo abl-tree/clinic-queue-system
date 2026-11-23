@@ -1203,5 +1203,35 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 .serving-item.shake { animation: shake 0.15s linear 66; }
 @keyframes shake { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(-2px,1px) rotate(-1deg); } 50% { transform: translate(2px,-1px) rotate(1deg); } 75% { transform: translate(-1px,2px) rotate(-0.5deg); } 100% { transform: translate(1px,-2px) rotate(0.5deg); } }
 
+/* Queue List Page - full width for TV/monitor display */
+main:has(.queue-list-page.full-width) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.queue-list-page.full-width {
+  width: 100%;
+  max-width: none;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.queue-list-page.full-width .two-col {
+  width: 100%;
+  gap: 60px;
+  padding: 40px 0;
+  grid-template-columns: 1fr 1fr;
+  box-sizing: border-box;
+}
+
+html:has(.queue-list-page.full-width),
+body:has(.queue-list-page.full-width) {
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
 
 
