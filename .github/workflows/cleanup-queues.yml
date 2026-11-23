@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Vercel queue cleanup
-        env:
-          CLEANUP_URL: ${{ secrets.VERCEL_CLEANUP_URL }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-        run: curl -X POST "$CLEANUP_URL" -H "Authorization: Bearer $CRON_SECRET"
+        run: |
+          curl -X POST ${{ secrets.VERCEL_CLEANUP_URL }} \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
