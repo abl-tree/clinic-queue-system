@@ -417,8 +417,6 @@ export function QueueProvider({ children }) {
         }
       }
 
-      await deleteDoc(servingRef)
-
       await updateDoc(doc(db, 'queues', doctorId, 'patients', patientId), {
         status: 'serving',
         updatedAt: serverTimestamp(),
