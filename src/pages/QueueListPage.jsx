@@ -31,6 +31,7 @@ export default function QueueListPage() {
   const { queues, serving, doctors } = useQueue()
   const isVisibleRef = useRef(true)
   const hasSpokenRef = useRef({})
+  const lastSeenRef = useRef(Date.now())
   const unsubRef = useRef(null)
 
   // Track page visibility - only listen for announcements when visible
@@ -54,8 +55,12 @@ export default function QueueListPage() {
           unsubRef.current = onSnapshot(collection(db, 'announcements'), (snap) => {
             snap.docChanges().forEach((c) => {
               if (c.type === 'added' && isVisibleRef.current) {
-                const text = c.doc.data().text
-                speakText(text)
+                const data = c.doc.data()
+                const createdAt = data.createdAt || 0
+                if (createdAt > lastSeenRef.current) {
+                  lastSeenRef.current = createdAt
+                  speakText(data.text)
+                }
               }
             })
           })
@@ -69,12 +74,16 @@ export default function QueueListPage() {
     // Initial subscription if visible
     if (!document.hidden) {
       unsubRef.current = onSnapshot(collection(db, 'announcements'), (snap) => {
-        snap.docChanges().forEach((c) => {
-          if (c.type === 'added' && isVisibleRef.current) {
-            const text = c.doc.data().text
-            speakText(text)
-          }
-        })
+          snap.docChanges().forEach((c) => {
+            if (c.type === 'added' && isVisibleRef.current) {
+              const data = c.doc.data()
+              const createdAt = data.createdAt || 0
+              if (createdAt > lastSeenRef.current) {
+                lastSeenRef.current = createdAt
+                speakText(data.text)
+              }
+            }
+          })
       })
     }
     
