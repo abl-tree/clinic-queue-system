@@ -13,17 +13,7 @@ export const doctors = []
 
 const todayKey = () => new Date().toISOString().split('T')[0]
 
-const sendNotification = async (hrn, title, body, data = {}) => {
-  try {
-    await fetch('/api/notify-patient', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hrn, title, body, data })
-    })
-  } catch (err) {
-    console.error('Error sending notification:', err)
-  }
-}
+const sendNotification = async () => {}
 
 export function QueueProvider({ children }) {
   const [doctors, setDoctors] = useState([])
