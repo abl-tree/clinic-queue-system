@@ -48,69 +48,30 @@ export default function QueueListPage() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       isVisibleRef.current = !document.hidden
-      
-      if (document.hidden) {
-        // Detach listener when hidden - no speech queued at all
-        if (unsubRef.current) {
-          unsubRef.current()
-          unsubRef.current = null
-        }
-        // Cancel any pending speech
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel()
-        }
-      } else {
-        // Attach listener when visible
-        if (!unsubRef.current) {
-          unsubRef.current = onSnapshot(collection(db, 'announcements'), (snap) => {
-            snap.docChanges().forEach((c) => {
-              if (c.type === 'added' && isVisibleRef.current) {
-                const data = c.doc.data()
-                const createdAt = data.createdAt || 0
-                if (createdAt > lastSeenRef.current) {
-                  lastSeenRef.current = createdAt
-                  speakText(data.text)
-                  // Flash the serving patient name when recalled
-                  const curServing = Object.values(servingRef.current)
-                  const recalled = curServing.find(s => s.name && data.text.includes(s.name))
-                  if (recalled) {
-                    setRecallFlash(f => ({ ...f, [recalled.id]: true }))
-                    setTimeout(() => {
-                      setRecallFlash(f => { const n = { ...f }; delete n[recalled.id]; return n })
-                    }, 1500)
-                  }
-                }
-              }
-            })
-          })
-        }
-      }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
     
-    // Initial subscription if visible
-    if (!document.hidden) {
-      unsubRef.current = onSnapshot(collection(db, 'announcements'), (snap) => {
-          snap.docChanges().forEach((c) => {
-            if (c.type === 'added' && isVisibleRef.current) {
-              const data = c.doc.data()
-              const createdAt = data.createdAt || 0
-              if (createdAt > lastSeenRef.current) {
-                lastSeenRef.current = createdAt
-                speakText(data.text)
-                // Flash the serving patient name when recalled
-                const recalled = servingPatients.find(p => p.name && data.text.includes(p.name))
-                if (recalled) {
-                  setRecallFlash(f => ({ ...f, [recalled.id]: true }))
-                  setTimeout(() => {
-                    setRecallFlash(f => { const n = { ...f }; delete n[recalled.id]; return n })
-                  }, 1500)
-                }
+    // Initial subscription
+    unsubRef.current = onSnapshot(collection(db, 'announcements'), (snap) => {
+        snap.docChanges().forEach((c) => {
+          if (c.type === 'added') {
+            const data = c.doc.data()
+            const createdAt = data.createdAt || 0
+            if (createdAt > lastSeenRef.current) {
+              lastSeenRef.current = createdAt
+              speakText(data.text)
+              // Flash the serving patient name when recalled
+              const recalled = servingPatients.find(p => p.name && data.text.includes(p.name))
+              if (recalled) {
+                setRecallFlash(f => ({ ...f, [recalled.id]: true }))
+                setTimeout(() => {
+                  setRecallFlash(f => { const n = { ...f }; delete n[recalled.id]; return n })
+                }, 1500)
               }
             }
-          })
-      })
-    }
+          }
+        })
+    })
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
@@ -194,7 +155,7 @@ export default function QueueListPage() {
     const next = {}
     Object.keys(serving).forEach((doctorId) => {
       next[doctorId] = serving[doctorId]?.id
-      if (prev[doctorId] !== next[doctorId] && isVisibleRef.current) {
+       if (prev[doctorId] !== next[doctorId]) {
         const s = serving[doctorId]
         const doc = doctors.find(d => d.id === doctorId)
         const q = (queues[doctorId] || []).filter(p => p.id !== s?.id).sort((a,b) => (a.queueNumber||0)-(b.queueNumber||0))
