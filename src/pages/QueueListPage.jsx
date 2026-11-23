@@ -28,6 +28,11 @@ function speakText(text) {
 }
 
 export default function QueueListPage() {
+  const [now, setNow] = useState(new Date())
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(t)
+  }, [])
   const { queues, serving, doctors } = useQueue()
   const isVisibleRef = useRef(true)
   const hasSpokenRef = useRef({})
@@ -179,6 +184,7 @@ export default function QueueListPage() {
 
   return (
     <div className="page queue-list-page full-width">
+      <div className="queue-list-datetime">{now.toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })} {now.toLocaleTimeString()}</div>
       <div className="two-col">
         <div className="col now-serving">
 <div className="serving-section">
