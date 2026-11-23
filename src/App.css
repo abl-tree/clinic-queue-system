@@ -152,6 +152,50 @@ input, textarea, select, .patient-name, .patient-name-minimal, .patient-doctor, 
   letter-spacing: 0.5px;
 }
 
+.doctor-search-wrap { position: relative; }
+.doctor-search-input { display: flex; gap: 6px; align-items: stretch; }
+.doctor-search-input input { flex: 1; }
+.doctor-search-input .btn { padding: 0 12px; white-space: nowrap; }
+.doctor-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 100;
+}
+.doctor-option {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.12s ease;
+}
+.doctor-option.selected { background: rgba(16, 185, 129, 0.14); font-weight: 600; box-shadow: inset 3px 0 0 #10b981; }
+.doctor-option.selected .doc-name, .doctor-option.selected .doc-spec { color: #047857; }
+.doctor-option.highlighted,
+.doctor-option.selected.highlighted,
+.doctor-option:hover { background: rgba(226, 113, 147, 0.16); font-weight: 600; box-shadow: inset 3px 0 0 var(--primary); }
+.doctor-option.selected.highlighted .doc-name, .doctor-option.selected.highlighted .doc-spec,
+.doctor-option.selected:hover .doc-name, .doctor-option.selected:hover .doc-spec { color: var(--primary-hover); }
+.doctor-option .doc-name { color: var(--text); }
+.doctor-option .doc-spec { color: var(--text-muted); font-size: 12px; }
+.doctor-option-empty { padding: 12px 14px; font-size: 13px; color: var(--text-muted); }
+.selected-doctor-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 .form-section { margin-bottom: 14px; }
 .form-section-title { 
   font-size: 12px; 

@@ -1,6 +1,7 @@
 import { useState, useEffect, Fragment } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
+import SearchSelect from '../components/SearchSelect'
 
 export default function StaffPage() {
   const { doctors, queues, addPatient, removePatient, clearQueue, getPatientProfile, addDoctor, savePatientProfile } = useQueue()
@@ -143,21 +144,12 @@ export default function StaffPage() {
           <form onSubmit={handleSubmit} className="patient-form">
             <div className="form-field">
               <label>Doctor</label>
-              <select value={selectedDoctor} onChange={(e) => {
-                const val = e.target.value
-                if (val === '__add__') {
-                  setAddingDoctor(true)
-                } else {
-                  setAddingDoctor(false)
-                  setSelectedDoctor(val)
-                }
-              }}>
-                <option value="">-- Choose Doctor --</option>
-                {doctors.map(d => (
-                  <option key={d.id} value={d.id}>{d.name} - {d.specialty}</option>
-                ))}
-                <option value="__add__">+ Add New Doctor</option>
-              </select>
+              <SearchSelect
+                doctors={doctors}
+                value={selectedDoctor}
+                onChange={setSelectedDoctor}
+                onAddNew={() => setAddingDoctor(true)}
+              />
             </div>
             <div className="hrn-field">
               <input
