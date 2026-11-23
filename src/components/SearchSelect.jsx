@@ -1,11 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 
 export default function SearchSelect({
-  doctors,
+  options = [],
   value,
   onChange,
   onAddNew,
-  placeholder = 'Search doctor by name or specialty',
+  placeholder = 'Search',
+  labelKey = 'name',
+  searchKeys,
+  valueKey = 'id',
+  optionTitle,
+  noResultsText = 'No matches',
 }) {
   const [search, setSearch] = useState('')
   const [open, setOpen] = useState(false)
@@ -14,13 +19,22 @@ export default function SearchSelect({
   const activeOptionRef = useRef(null)
   const inputRef = useRef(null)
 
-  const selectedDoctor = doctors.find(d => d.id === value)
+  const keys = searchKeys || [labelKey]
+
+  const getLabel = (opt) => {
+    if (optionTitle) return optionTitle(opt)
+    return opt[labelKey] ?? ''
+  }
+
+  const selected = options.find(o => o[valueKey] === value)
+  const selectedLabel = selected ? getLabel(selected) : ''
+  const displayValue = open ? search : selectedLabel
   const query = search.trim().toLowerCase()
+
   const filtered = query
-    ? doctors.filter(d =>
-        d.name?.toLowerCase().includes(query) ||
-        d.specialty?.toLowerCase().includes(query))
-    : doctors
+    ? options.filter(o =>
+        keys.some(k => String(o[k] ?? '').toLowerCase().includes(query)))
+    : options
   const effectiveIndex = activeIndex === -1 ? 0 : activeIndex
 
   useEffect(() => {
@@ -40,8 +54,8 @@ export default function SearchSelect({
     if (activeOptionRef.current) activeOptionRef.current.scrollIntoView({ block: 'nearest' })
   }, [effectiveIndex])
 
-  const choose = (doc) => {
-    onChange(doc.id)
+  const choose = (opt) => {
+    onChange(opt[valueKey])
     setSearch('')
     setOpen(false)
     if (inputRef.current) inputRef.current.blur()
@@ -70,7 +84,7 @@ export default function SearchSelect({
 
   return (
     <div
-      className="doctor-search-wrap"
+      className="search-select-wrap"
       ref={wrapRef}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) {
@@ -79,12 +93,12 @@ export default function SearchSelect({
         }
       }}
     >
-      <div className="doctor-search-input">
+      <div className="search-select-input">
         <input
           type="text"
           ref={inputRef}
-          placeholder={selectedDoctor ? `${selectedDoctor.name} - ${selectedDoctor.specialty}` : placeholder}
-          value={search}
+          placeholder={placeholder}
+          value={displayValue}
           onFocus={() => setOpen(true)}
           onChange={(e) => { setSearch(e.target.value); setOpen(true) }}
           onKeyDown={handleKeyDown}
@@ -94,26 +108,28 @@ export default function SearchSelect({
           <button
             type="button"
             className="btn btn-ghost btn-sm"
-            title="Add New Doctor"
+            title="Add New"
             onClick={onAddNew}
           >+</button>
         )}
       </div>
       {open && (
-        <div className="doctor-dropdown">
-          {filtered.length > 0 ? filtered.map((d, i) => (
-            <div
-              key={d.id}
-              ref={i === effectiveIndex ? activeOptionRef : null}
-              className={`doctor-option${d.id === value ? ' selected' : ''}${i === effectiveIndex ? ' highlighted' : ''}`}
-              onMouseEnter={() => setActiveIndex(i)}
-              onMouseDown={(e) => { e.preventDefault(); choose(d) }}
-            >
-              <span className="doc-name">{d.name}</span>
-              <span className="doc-spec">{d.specialty}</span>
-            </div>
-          )) : (
-            <div className="doctor-option-empty">No doctors match</div>
+        <div className="search-select-dropdown">
+          {filtered.length > 0 ? filtered.map((opt, i) => {
+            const label = optionTitle ? optionTitle(opt) : opt[labelKey]
+            return (
+              <div
+                key={opt[valueKey]}
+                ref={i === effectiveIndex ? activeOptionRef : null}
+                className={`search-select-option${opt[valueKey] === value ? ' selected' : ''}${i === effectiveIndex ? ' highlighted' : ''}`}
+                onMouseEnter={() => setActiveIndex(i)}
+                onMouseDown={(e) => { e.preventDefault(); choose(opt) }}
+              >
+                <span className="opt-label">{label}</span>
+              </div>
+            )
+          }) : (
+            <div className="search-select-empty">{noResultsText}</div>
           )}
         </div>
       )}

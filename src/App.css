@@ -152,11 +152,11 @@ input, textarea, select, .patient-name, .patient-name-minimal, .patient-doctor, 
   letter-spacing: 0.5px;
 }
 
-.doctor-search-wrap { position: relative; }
-.doctor-search-input { display: flex; gap: 6px; align-items: stretch; }
-.doctor-search-input input { flex: 1; }
-.doctor-search-input .btn { padding: 0 12px; white-space: nowrap; }
-.doctor-dropdown {
+.search-select-wrap { position: relative; }
+.search-select-input { display: flex; gap: 6px; align-items: stretch; }
+.search-select-input input { flex: 1; }
+.search-select-input .btn { padding: 0 12px; white-space: nowrap; }
+.search-select-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -170,7 +170,7 @@ input, textarea, select, .patient-name, .patient-name-minimal, .patient-doctor, 
   overflow-y: auto;
   z-index: 100;
 }
-.doctor-option {
+.search-select-option {
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
@@ -180,21 +180,15 @@ input, textarea, select, .patient-name, .patient-name-minimal, .patient-doctor, 
   font-size: 14px;
   transition: background 0.12s ease;
 }
-.doctor-option.selected { background: rgba(16, 185, 129, 0.14); font-weight: 600; box-shadow: inset 3px 0 0 #10b981; }
-.doctor-option.selected .doc-name, .doctor-option.selected .doc-spec { color: #047857; }
-.doctor-option.highlighted,
-.doctor-option.selected.highlighted,
-.doctor-option:hover { background: rgba(226, 113, 147, 0.16); font-weight: 600; box-shadow: inset 3px 0 0 var(--primary); }
-.doctor-option.selected.highlighted .doc-name, .doctor-option.selected.highlighted .doc-spec,
-.doctor-option.selected:hover .doc-name, .doctor-option.selected:hover .doc-spec { color: var(--primary-hover); }
-.doctor-option .doc-name { color: var(--text); }
-.doctor-option .doc-spec { color: var(--text-muted); font-size: 12px; }
-.doctor-option-empty { padding: 12px 14px; font-size: 13px; color: var(--text-muted); }
-.selected-doctor-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
+.search-select-option .opt-label { color: var(--text); }
+.search-select-option.selected { background: rgba(16, 185, 129, 0.14); font-weight: 600; box-shadow: inset 3px 0 0 #10b981; }
+.search-select-option.selected .opt-label { color: #047857; }
+.search-select-option.highlighted,
+.search-select-option.selected.highlighted,
+.search-select-option:hover { background: rgba(226, 113, 147, 0.16); font-weight: 600; box-shadow: inset 3px 0 0 var(--primary); }
+.search-select-option.selected.highlighted .opt-label,
+.search-select-option.selected:hover .opt-label { color: var(--primary-hover); }
+.search-select-empty { padding: 12px 14px; font-size: 13px; color: var(--text-muted); }
 
 .form-section { margin-bottom: 14px; }
 .form-section-title { 

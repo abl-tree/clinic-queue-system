@@ -18,7 +18,7 @@ export default function StaffPage() {
     </nav>
   )
   const [selectedDoctor, setSelectedDoctor] = useState(doctors.length > 0 ? doctors[0]?.id : '')
-  const [formData, setFormData] = useState({ hrn: '', name: '', contact: '', reason: '' })
+  const [formData, setFormData] = useState({ hrn: '', name: '', contact: '', reason: 'Consultation' })
   const [patientFound, setPatientFound] = useState(false)
   const [fetchedProfile, setFetchedProfile] = useState(null)
   const [loadingProfile, setLoadingProfile] = useState(false)
@@ -102,7 +102,7 @@ export default function StaffPage() {
       reason: capitalize(formData.reason)
     })
     showToast('Patient added to queue')
-    setFormData({ hrn: '', name: '', contact: '', reason: '' })
+    setFormData({ hrn: '', name: '', contact: '', reason: 'Consultation' })
     setPatientFound(false)
   }
 
@@ -145,10 +145,15 @@ export default function StaffPage() {
             <div className="form-field">
               <label>Doctor</label>
               <SearchSelect
-                doctors={doctors}
+                options={doctors}
                 value={selectedDoctor}
                 onChange={setSelectedDoctor}
                 onAddNew={() => setAddingDoctor(true)}
+                placeholder="Search doctor by name or specialty"
+                labelKey="name"
+                searchKeys={['name', 'specialty']}
+                optionTitle={(d) => `${d.name} - ${d.specialty}`}
+                noResultsText="No doctors match"
               />
             </div>
             <div className="hrn-field">
@@ -175,12 +180,6 @@ export default function StaffPage() {
               onBlur={handleNameBlur}
               autoCapitalize="words"
               required
-            />
-            <input
-              type="text"
-              placeholder="Contact Number"
-              value={formData.contact}
-              onChange={(e) => setFormData({...formData, contact: e.target.value})}
             />
             <input
               type="text"
