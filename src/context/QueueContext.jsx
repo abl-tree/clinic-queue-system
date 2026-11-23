@@ -11,7 +11,18 @@ const QueueContext = createContext(null)
 
 export const doctors = []
 
-const todayKey = () => new Date().toISOString().split('T')[0]
+const todayKey = () => {
+  const date = new Date()
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+  return formatter.format(date)
+}
+
+const newBatchKey = () => `batch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 const sendNotification = async () => {}
 
@@ -22,12 +33,35 @@ export function QueueProvider({ children }) {
   const [serving, setServing] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [batchKey, setBatchKey] = useState('')
 
   useEffect(() => {
+    const loadBatch = async () => {
+      try {
+        const batchRef = doc(db, 'queueBatch', 'current')
+        const snap = await getDoc(batchRef)
+        if (snap.exists() && snap.data().key) {
+          setBatchKey(snap.data().key)
+        } else {
+          const key = newBatchKey()
+          await setDoc(batchRef, { key, createdAt: serverTimestamp() })
+          setBatchKey(key)
+        }
+      } catch (err) {
+        console.error('Error loading batch key:', err)
+        const key = newBatchKey()
+        setBatchKey(key)
+      }
+    }
+    loadBatch()
+  }, [])
+
+  useEffect(() => {
+    if (!batchKey) return
     const unsubscribers = doctors.map(doctor => {
       const qRef = collection(db, 'queues', doctor.id, 'patients')
-      const q = query(qRef, where('status', '==', 'waiting'), where('date', '==', todayKey()), orderBy('position'))
-      
+      const q = query(qRef, where('status', '==', 'waiting'), where('batchKey', '==', batchKey), orderBy('position'))
+
       return onSnapshot(q, (snapshot) => {
         const patients = []
         snapshot.forEach(doc => {
@@ -45,7 +79,7 @@ export function QueueProvider({ children }) {
     return () => {
       unsubscribers.forEach(unsub => unsub())
     }
-  }, [doctors])
+  }, [doctors, batchKey])
 
   useEffect(() => {
     const servingRef = collection(db, 'serving')
@@ -278,33 +312,22 @@ export function QueueProvider({ children }) {
     }
   }, [])
 
-  const addPatient = useCallback(async (doctorId, patientData) => {
+const addPatient = useCallback(async (doctorId, patientData) => {
     try {
       const { hrn, name, contact, reason } = patientData
-      
+
       // Save/update patient profile
       if (hrn) {
         await savePatientProfile(hrn, { name, contact, lastDoctorId: doctorId })
       }
 
       const queueRef = collection(db, 'queues', doctorId, 'patients')
-      const q = query(queueRef, where('status', '==', 'waiting'), orderBy('position', 'desc'))
-      
+      const q = query(queueRef, where('status', '==', 'waiting'), where('batchKey', '==', batchKey), orderBy('position', 'desc'))
+
       let position = 0
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         position = (snapshot.docs[0].data().position || 0) + 1
-      }
-
-      // Daily queue counter (resets at midnight)
-      const counterRef = doc(db, 'queueCounters', todayKey())
-      const counterSnap = await getDoc(counterRef)
-      let queueNumber = 1
-      if (counterSnap.exists()) {
-        queueNumber = (counterSnap.data().count || 0) + 1
-        await updateDoc(counterRef, { count: queueNumber, updatedAt: serverTimestamp() })
-      } else {
-        await setDoc(counterRef, { count: queueNumber, date: todayKey(), createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
       }
 
       const newPatient = {
@@ -315,8 +338,8 @@ export function QueueProvider({ children }) {
         doctorId,
         status: 'waiting',
         position,
-        queueNumber,
-        date: todayKey(),
+        batchKey,
+        queueNumber: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       }
@@ -327,20 +350,20 @@ export function QueueProvider({ children }) {
       await sendNotification(
         hrn,
         doctor ? `Clinic Queue - Dr. ${doctor.name}` : 'Clinic Queue',
-        `You've been added to the queue (${doctor ? doctor.name : 'your doctor'}). Queue #${queueNumber || '—'}`,
-        { doctorId, queueNumber: String(queueNumber || ''), type: 'queued' }
+        `You've been added to the queue (${doctor ? doctor.name : 'your doctor'}). Queue #${newPatient.queueNumber || '—'}`,
+        { doctorId, queueNumber: String(newPatient.queueNumber || ''), type: 'queued' }
       )
     } catch (err) {
       console.error('Error adding patient:', err)
       throw err
     }
-  }, [savePatientProfile, doctors])
+  }, [savePatientProfile, doctors, batchKey])
 
-  const serveNext = useCallback(async (doctorId) => {
+const serveNext = useCallback(async (doctorId) => {
     try {
       const queueRef = collection(db, 'queues', doctorId, 'patients')
-      const q = query(queueRef, where('status', '==', 'waiting'), where('date', '==', todayKey()), orderBy('position'), orderBy('createdAt'))
-      
+      const q = query(queueRef, where('status', '==', 'waiting'), where('batchKey', '==', batchKey), orderBy('position'), orderBy('createdAt'))
+
       const snapshot = await getDocs(q)
       if (snapshot.empty) return
 
@@ -384,7 +407,7 @@ export function QueueProvider({ children }) {
       console.error('Error serving next:', err)
       throw err
     }
-  }, [doctors])
+  }, [doctors, batchKey])
 
   const servePatient = useCallback(async (doctorId, patientId) => {
     try {
@@ -530,7 +553,7 @@ export function QueueProvider({ children }) {
       })
 
       // Serve the next waiting patient (or clear serving)
-      const nextQ = query(queueRef, where('status', '==', 'waiting'), orderBy('position'), orderBy('createdAt'))
+      const nextQ = query(queueRef, where('status', '==', 'waiting'), where('batchKey', '==', batchKey), orderBy('position'), orderBy('createdAt'))
       const nextSnapshot = await getDocs(nextQ)
       if (!nextSnapshot.empty) {
         const nextPatientDoc = nextSnapshot.docs[0]
@@ -556,13 +579,26 @@ export function QueueProvider({ children }) {
         )
       } else {
         await deleteDoc(servingRef)
+        // Check if all queues across all doctors are now empty
+        let allEmpty = true
+        for (const doc of doctors) {
+          const q = query(collection(db, 'queues', doc.id, 'patients'), where('status', '==', 'waiting'), where('batchKey', '==', batchKey))
+          const snap = await getDocs(q)
+          if (!snap.empty) { allEmpty = false; break }
+        }
+        if (allEmpty) {
+          const key = newBatchKey()
+          const batchRef = doc(db, 'queueBatch', 'current')
+          await setDoc(batchRef, { key, createdAt: serverTimestamp() }, { merge: true })
+          setBatchKey(key)
+        }
       }
 
     } catch (err) {
       console.error('Error completing patient:', err)
       throw err
     }
-  }, [doctors])
+  }, [doctors, batchKey])
 
   const removePatient = useCallback(async (doctorId, patientId) => {
     try {
@@ -573,23 +609,19 @@ export function QueueProvider({ children }) {
     }
   }, [])
 
-  const clearQueue = useCallback(async (doctorId) => {
+const clearQueue = useCallback(async (doctorId) => {
     try {
       const queueRef = collection(db, 'queues', doctorId, 'patients')
       const q = query(queueRef, where('status', 'in', ['waiting', 'serving']))
       const snapshot = await getDocs(q)
-      
+
       const batch = writeBatch(db)
       snapshot.forEach(doc => {
         batch.delete(doc.ref)
       })
       await batch.commit()
-      
-      await deleteDoc(doc(db, 'serving', doctorId))
 
-      // Reset daily queue counter
-      const counterRef = doc(db, 'queueCounters', todayKey())
-      await setDoc(counterRef, { count: 0, date: todayKey(), updatedAt: serverTimestamp() }, { merge: true })
+      await deleteDoc(doc(db, 'serving', doctorId))
     } catch (err) {
       console.error('Error clearing queue:', err)
       throw err
@@ -601,6 +633,11 @@ export function QueueProvider({ children }) {
       for (const doctor of doctors) {
         await clearQueue(doctor.id)
       }
+      // Generate a new batch key so new queues start fresh
+      const key = newBatchKey()
+      const batchRef = doc(db, 'queueBatch', 'current')
+      await setDoc(batchRef, { key, createdAt: serverTimestamp() }, { merge: true })
+      setBatchKey(key)
     } catch (err) {
       console.error('Error clearing all queues:', err)
       throw err
