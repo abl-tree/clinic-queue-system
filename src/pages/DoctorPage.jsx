@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { db } from '../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import { useState, useEffect, useRef, Fragment } from 'react'
+import SoundPrompt from '../components/SoundPrompt'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
@@ -118,7 +119,8 @@ export default function DoctorPage({ doctorId } = {}) {
       {currentServing && (
         <section className="serving-window">
           <div className="serving-badge">NOW SERVING</div>
-          <button className="sound-toggle" onClick={() => speakText('Sound enabled')} aria-label="Enable sound announcements">🔊</button>
+          <button className="sound-toggle" onClick={() => { speakText('Sound enabled'); localStorage.setItem('clinic-sound-enabled-date', new Date().toDateString()) }} aria-label="Enable sound announcements">🔊</button>
+          <SoundPrompt />
           <div className="serving-patient-info">
             <span className="patient-number">#{currentServing.queueNumber || '—'}</span>
             <span className="patient-name">

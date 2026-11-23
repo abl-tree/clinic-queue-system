@@ -828,7 +828,54 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   .login-card { max-height: 90vh; overflow-y: auto; }
 }
 
-/* Modal */
+.sound-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+.sound-prompt {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 32px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  animation: slideUp 0.3s ease;
+}
+
+.sound-prompt-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.sound-prompt h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.sound-prompt p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.sound-prompt-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 .modal-overlay {
   position: fixed;
   inset: 0;

@@ -3,6 +3,7 @@ import { useQueue } from '../context/QueueContext'
 import { Link, useLocation } from 'react-router-dom'
 import { db } from '../lib/firebase'
 import { collection, onSnapshot } from 'firebase/firestore'
+import SoundPrompt from '../components/SoundPrompt'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
@@ -209,7 +210,8 @@ export default function QueueListPage() {
         <div className="col now-serving">
 <div className="serving-section">
             <div className="serving-badge">NOW SERVING</div>
-            <button className="sound-toggle" onClick={() => speakText('Sound enabled')} aria-label="Enable sound announcements">🔊</button>
+            <button className="sound-toggle" onClick={() => { speakText('Sound enabled'); localStorage.setItem('clinic-sound-enabled-date', new Date().toDateString()) }} aria-label="Enable sound announcements">🔊</button>
+            <SoundPrompt />
             {servingPatients.length === 0 ? (
               <p className="empty">No patients being served.</p>
             ) : (
