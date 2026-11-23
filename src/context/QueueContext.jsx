@@ -284,7 +284,7 @@ export function QueueProvider({ children }) {
       
       // Save/update patient profile
       if (hrn) {
-        await savePatientProfile(hrn, { name, contact })
+        await savePatientProfile(hrn, { name, contact, lastDoctorId: doctorId })
       }
 
       const queueRef = collection(db, 'queues', doctorId, 'patients')

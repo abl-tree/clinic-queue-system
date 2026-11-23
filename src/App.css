@@ -153,9 +153,27 @@ input, textarea, select, .patient-name, .patient-name-minimal, .patient-doctor, 
 }
 
 .search-select-wrap { position: relative; }
-.search-select-input { display: flex; gap: 6px; align-items: stretch; }
-.search-select-input input { flex: 1; }
+.search-select-input { display: flex; gap: 6px; align-items: stretch; position: relative; }
+.search-select-input input { flex: 1; padding-right: 28px; }
 .search-select-input .btn { padding: 0 12px; white-space: nowrap; }
+.search-select-input .search-select-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 6px;
+  min-width: auto;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.doctor-field-row { display: flex; gap: 6px; align-items: stretch; }
+.doctor-field-row .search-select-wrap { flex: 1; }
+.doctor-field-row .search-select-input { flex: 1; }
+.doctor-field-row .search-select-input input { flex: 1; }
+.doctor-field-row .btn { flex-shrink: 0; }
 .search-select-dropdown {
   position: absolute;
   top: 100%;

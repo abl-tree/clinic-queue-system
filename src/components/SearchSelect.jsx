@@ -4,7 +4,7 @@ export default function SearchSelect({
   options = [],
   value,
   onChange,
-  onAddNew,
+  onClear,
   placeholder = 'Search',
   labelKey = 'name',
   searchKeys,
@@ -28,7 +28,7 @@ export default function SearchSelect({
 
   const selected = options.find(o => o[valueKey] === value)
   const selectedLabel = selected ? getLabel(selected) : ''
-  const displayValue = open ? search : selectedLabel
+  const displayValue = open ? search : (value ? selectedLabel : '')
   const query = search.trim().toLowerCase()
 
   const filtered = query
@@ -104,13 +104,13 @@ export default function SearchSelect({
           onKeyDown={handleKeyDown}
           autoComplete="off"
         />
-        {onAddNew && (
+        {onClear && value && (
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
-            title="Add New"
-            onClick={onAddNew}
-          >+</button>
+            className="btn btn-ghost btn-sm search-select-clear"
+            title="Clear"
+            onClick={() => { onChange(''); onClear() }}
+          >×</button>
         )}
       </div>
       {open && (

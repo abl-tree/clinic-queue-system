@@ -17,7 +17,7 @@ export default function StaffPage() {
       ))}
     </nav>
   )
-  const [selectedDoctor, setSelectedDoctor] = useState(doctors.length > 0 ? doctors[0]?.id : '')
+  const [selectedDoctor, setSelectedDoctor] = useState('')
   const [formData, setFormData] = useState({ hrn: '', name: '', contact: '', reason: 'Consultation' })
   const [patientFound, setPatientFound] = useState(false)
   const [fetchedProfile, setFetchedProfile] = useState(null)
@@ -51,12 +51,6 @@ export default function StaffPage() {
     return str.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
   }
 
-  useEffect(() => {
-    if (doctors.length > 0 && !selectedDoctor) {
-      setSelectedDoctor(doctors[0]?.id)
-    }
-  }, [doctors])
-
   const handleHrnBlur = async () => {
     const hrn = formData.hrn.trim()
     if (!hrn) return
@@ -71,6 +65,9 @@ export default function StaffPage() {
       }))
       setFetchedProfile(profile)
       setPatientFound(true)
+      if (profile.lastDoctorId) {
+        setSelectedDoctor(profile.lastDoctorId)
+      }
     } else {
       setFetchedProfile(null)
       setPatientFound(false)
@@ -117,8 +114,8 @@ export default function StaffPage() {
     setNewDoctorSpecialty('Internal Medicine')
   }
 
-  const currentQueue = queues[selectedDoctor] || []
-  const currentDoctor = doctors.find(d => d.id === selectedDoctor)
+  const currentQueue = selectedDoctor ? (queues[selectedDoctor] || []) : null
+  const currentDoctor = selectedDoctor ? doctors.find(d => d.id === selectedDoctor) : null
 
   return (
     <div className="page staff-page">
@@ -142,20 +139,6 @@ export default function StaffPage() {
         <section className="card add-patient-card">
           <h2>Add Patient to Queue</h2>
           <form onSubmit={handleSubmit} className="patient-form">
-            <div className="form-field">
-              <label>Doctor</label>
-              <SearchSelect
-                options={doctors}
-                value={selectedDoctor}
-                onChange={setSelectedDoctor}
-                onAddNew={() => setAddingDoctor(true)}
-                placeholder="Search doctor by name or specialty"
-                labelKey="name"
-                searchKeys={['name', 'specialty']}
-                optionTitle={(d) => `${d.name} - ${d.specialty}`}
-                noResultsText="No doctors match"
-              />
-            </div>
             <div className="hrn-field">
               <input
                 type="text"
@@ -181,6 +164,29 @@ export default function StaffPage() {
               autoCapitalize="words"
               required
             />
+            <div className="form-field">
+              <label>Doctor</label>
+              <div className="doctor-field-row">
+                <SearchSelect
+                  options={doctors}
+                  value={selectedDoctor}
+                  onChange={setSelectedDoctor}
+                  onClear={() => setSelectedDoctor('')}
+                  placeholder="Search doctor by name or specialty"
+                  labelKey="name"
+                  searchKeys={['name', 'specialty']}
+                  optionTitle={(d) => `${d.name} - ${d.specialty}`}
+                  noResultsText="No doctors match"
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  title="Add New Doctor"
+                  onClick={() => setAddingDoctor(true)}
+                  style={{ flexShrink: 0 }}
+                >+</button>
+              </div>
+            </div>
             <input
               type="text"
               placeholder="Reason for Visit"
@@ -194,8 +200,8 @@ export default function StaffPage() {
 
         <section className="card queue-card">
           <div className="queue-header">
-            <h2>Queue for {currentDoctor?.name} ({currentQueue.length})</h2>
-            {currentQueue.length > 0 && (
+            <h2>Queue for {currentDoctor?.name || 'All Doctors'} ({currentQueue ? currentQueue.length : 0})</h2>
+            {selectedDoctor && currentQueue.length > 0 && (
                <Fragment>
                 <button onClick={() => { setDoctorToClear(selectedDoctor); setShowClearConfirm(true) }} className="btn btn-danger btn-sm" style={{ background: '#dc2626', borderColor: '#dc2626' }}>
                   Clear Queue
@@ -238,7 +244,39 @@ export default function StaffPage() {
             )}
           </div>
           <div className="queue-list">
-            {currentQueue.length === 0 ? (
+            {currentQueue === null ? (
+              <div className="all-queues-list">
+                {Object.keys(queues).length === 0 ? (
+                  <p className="empty">No queues available</p>
+                ) : (
+                  Object.entries(queues).map(([docId, q]) => {
+                    const doc = doctors.find(d => d.id === docId)
+                    return (
+                      <div key={docId} className="queue-section">
+                        <h3 className="queue-section-title">{doc?.name || docId} ({q.length})</h3>
+                        {q.length === 0 ? (
+                          <p className="empty">No patients in queue</p>
+                        ) : (
+                          q.sort((a, b) => (a.queueNumber || 0) - (b.queueNumber || 0)).map((patient, index) => (
+                            <div key={patient.id} className="queue-item">
+                              <span className="queue-number">#{patient.queueNumber !== undefined ? patient.queueNumber : index + 1}</span>
+                              <div className="patient-info">
+                                <span className="patient-name">{patient.name ? `${patient.name} (HRN: ${patient.hrn})` : `HRN: ${patient.hrn}`}</span>
+                                <span className="patient-meta">
+                                  {patient.contact && `${patient.contact}`}
+                                  {patient.reason && ` | ${patient.reason}`}
+                                </span>
+                              </div>
+                              <span className="time">{patient.timestamp}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            ) : currentQueue.length === 0 ? (
               <p className="empty">No patients in queue</p>
             ) : (
               currentQueue.sort((a, b) => (a.queueNumber || 0) - (b.queueNumber || 0)).map((patient, index) => (
