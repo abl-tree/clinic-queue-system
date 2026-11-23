@@ -96,7 +96,7 @@ export default function DoctorPage({ doctorId } = {}) {
       const key = `${currentDoctorId}-${currentServing.id}`
       if (!hasSpokenRef.current[key]) {
         hasSpokenRef.current[key] = true
-        const msg = `${currentServing.name || 'Patient'}.`
+        const msg = `You're serving ${currentServing.name || 'Patient'}.`
         speakText(msg)
       }
     }
