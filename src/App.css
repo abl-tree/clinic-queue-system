@@ -328,6 +328,14 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
   text-overflow: ellipsis;
 }
 
+.queue-details-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
 /* Mobile queue-item-minimal adjustments */
 @media (max-width: 640px) {
   .queue-item-minimal {
