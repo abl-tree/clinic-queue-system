@@ -1,6 +1,7 @@
 import { useQueue } from '../context/QueueContext'
 import { Link } from 'react-router-dom'
 import { db } from '../lib/firebase'
+import { speakText } from '../lib/speech'
 import { collection, addDoc } from 'firebase/firestore'
 import { useState, useEffect, useRef, Fragment } from 'react'
 import SoundPrompt from '../components/SoundPrompt'
@@ -16,17 +17,6 @@ const Breadcrumb = ({ items }) => (
     ))}
   </nav>
 )
-
-function speakText(text) {
-  if (!text || !('speechSynthesis' in window)) return
-  const synth = window.speechSynthesis
-  synth.cancel()
-  const utterance = new SpeechSynthesisUtterance(text)
-  utterance.rate = 1
-  utterance.pitch = 1
-  utterance.volume = 1
-  synth.speak(utterance)
-}
 
 const formatTimeSpend = (startedAt) => {
   if (!startedAt) return '0:00'
@@ -68,11 +58,6 @@ export default function DoctorPage({ doctorId } = {}) {
   useEffect(() => {
     const handleVisibilityChange = () => {
       isVisibleRef.current = !document.hidden
-      if (document.hidden) {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel()
-        }
-      }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)

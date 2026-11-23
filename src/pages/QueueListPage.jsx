@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, Fragment } from 'react'
 import { useQueue } from '../context/QueueContext'
 import { Link, useLocation } from 'react-router-dom'
 import { db } from '../lib/firebase'
+import { speakText } from '../lib/speech'
 import { collection, onSnapshot } from 'firebase/firestore'
 import SoundPrompt from '../components/SoundPrompt'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -16,18 +17,6 @@ const Breadcrumb = ({ items }) => (
     ))}
   </nav>
 )
-
-function speakText(text) {
-  if (!text || !('speechSynthesis' in window)) return
-  const synth = window.speechSynthesis
-  // Cancel any pending speech to prevent queue buildup
-  synth.cancel()
-  const utterance = new SpeechSynthesisUtterance(text)
-  utterance.rate = 1
-  utterance.pitch = 1
-  utterance.volume = 1
-  synth.speak(utterance)
-}
 
 export default function QueueListPage() {
   const [now, setNow] = useState(new Date())
@@ -61,7 +50,8 @@ export default function QueueListPage() {
               lastSeenRef.current = createdAt
               speakText(data.text)
               // Flash the serving patient name when recalled
-              const recalled = servingPatients.find(p => p.name && data.text.includes(p.name))
+              const curServing = Object.values(servingRef.current)
+              const recalled = curServing.find(s => s.name && data.text.includes(s.name))
               if (recalled) {
                 setRecallFlash(f => ({ ...f, [recalled.id]: true }))
                 setTimeout(() => {

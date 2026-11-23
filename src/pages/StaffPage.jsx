@@ -205,7 +205,7 @@ export default function StaffPage() {
           <div className="queue-header">
             <h2>Queue for {currentDoctor?.name} ({currentQueue.length})</h2>
             {currentQueue.length > 0 && (
-              <Fragment key={i}>
+               <Fragment>
                 <button onClick={() => { setDoctorToClear(selectedDoctor); setShowClearConfirm(true) }} className="btn btn-danger btn-sm" style={{ background: '#dc2626', borderColor: '#dc2626' }}>
                   Clear Queue
                 </button>
