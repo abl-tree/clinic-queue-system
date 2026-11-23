@@ -131,3 +131,60 @@ On iOS, the link opens the app but web push is not supported (Apple limitation);
 - Not available on iOS web push (use Messenger as the iOS notification channel instead)
 - Vercel Hobby plan has serverless function limits (10s execution time, 1024 MB memory)
 
+## Queue Cleanup (Daily at 3 AM UTC)
+
+Queue numbers reset daily and old waiting patients are auto-marked as `completed` at 3:00 AM UTC via a **GitHub Actions workflow** (since Vercel Hobby plan doesn't include Cron Jobs).
+
+### How it works
+
+1. **`api/cleanup-queues.js`** — Vercel serverless function that performs the cleanup
+2. **`.github/workflows/cleanup-queues.yml`** — GitHub Actions triggers the cleanup endpoint daily at 3:00 AM UTC
+3. **Cleanup logic** — resets the `queueCounters` document for today to `count: 0` (next patient gets queue #1) and marks all `waiting` patients from previous days as `completed`
+
+### Setup
+
+1. **Firebase service account** — already required for `api/_firebase.js`. Set in Vercel:
+   - `FIREBASE_PROJECT_ID`
+   - `FIREBASE_CLIENT_EMAIL`
+   - `FIREBASE_PRIVATE_KEY`
+
+2. **GitHub Secrets** (Repository → Settings → Secrets and variables → Actions):
+   - `VERCEL_CLEANUP_URL` — `https://your-domain.vercel.app/api/cleanup-queues`
+   - `CRON_SECRET` — any random string (also set in Vercel env vars as `CRON_SECRET`)
+
+3. **Vercel Environment Variables** (Project Settings → Environment Variables):
+   - `CRON_SECRET` — same value as the GitHub secret above
+
+4. **Deploy** — push to your connected branch; Vercel auto-deploys the `api/cleanup-queues` function.
+
+5. **Test manually** — run the workflow from the **Actions** tab → "Run workflow", or call the endpoint directly:
+
+   ```bash
+   curl -X POST https://your-domain.vercel.app/api/cleanup-queues \
+     -H "Authorization: Bearer <your_cron_secret>"
+   ```
+
+### Expected response
+
+```json
+{
+  "ok": true,
+  "today": "2026-11-23",
+  "cleaned": true,
+  "message": "Queue counter reset and old waiting patients marked completed for 2026-11-23"
+}
+```
+
+Or if it's before 3 AM:
+
+```json
+{
+  "ok": true,
+  "skipped": true,
+  "reason": "Not yet 3 AM (current hour: 22)",
+  "today": "2026-11-23"
+}
+```
+
+## Firebase Service Account (for Vercel serverless functions)
+
