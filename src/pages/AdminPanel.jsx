@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
 import { collection, onSnapshot, query, orderBy, getDocs } from 'firebase/firestore'
@@ -7,10 +7,10 @@ import { db } from '../lib/firebase'
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
     {items.map((item, i) => (
-      <>
+      <Fragment key={i}>
         {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
         {i < items.length - 1 && <span className="sep">›</span>}
-      </>
+      </Fragment>
     ))}
   </nav>
 )
@@ -645,3 +645,4 @@ export default function AdminPanel() {
     </div>
   )
 }
+

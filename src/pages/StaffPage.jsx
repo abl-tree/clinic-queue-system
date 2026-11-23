@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
 
@@ -9,10 +9,10 @@ export default function StaffPage() {
   const Breadcrumb = ({ items }) => (
     <nav className="breadcrumb">
       {items.map((item, i) => (
-        <>
+        <Fragment key={i}>
           {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
           {i < items.length - 1 && <span className="sep">›</span>}
-        </>
+        </Fragment>
       ))}
     </nav>
   )
@@ -205,7 +205,7 @@ export default function StaffPage() {
           <div className="queue-header">
             <h2>Queue for {currentDoctor?.name} ({currentQueue.length})</h2>
             {currentQueue.length > 0 && (
-              <>
+              <Fragment key={i}>
                 <button onClick={() => { setDoctorToClear(selectedDoctor); setShowClearConfirm(true) }} className="btn btn-danger btn-sm" style={{ background: '#dc2626', borderColor: '#dc2626' }}>
                   Clear Queue
                 </button>
@@ -243,7 +243,7 @@ export default function StaffPage() {
                     </div>
                   </div>
                 )}
-              </>
+              </Fragment>
             )}
           </div>
           <div className="queue-list">

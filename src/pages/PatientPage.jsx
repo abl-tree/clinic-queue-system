@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useQueue } from '../context/QueueContext'
 import { Link, useSearchParams } from 'react-router-dom'
 import { registerPush } from '../lib/push'
@@ -6,10 +6,10 @@ import { registerPush } from '../lib/push'
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
     {items.map((item, i) => (
-      <>
+      <Fragment key={i}>
         {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
         {i < items.length - 1 && <span className="sep">›</span>}
-      </>
+      </Fragment>
     ))}
   </nav>
 )

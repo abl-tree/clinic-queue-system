@@ -2,15 +2,15 @@ import { useQueue } from '../context/QueueContext'
 import { Link } from 'react-router-dom'
 import { db } from '../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
     {items.map((item, i) => (
-      <>
+      <Fragment key={i}>
         {item.link ? <Link to={item.link}>{item.label}</Link> : <span>{item.label}</span>}
         {i < items.length - 1 && <span className="sep">›</span>}
-      </>
+      </Fragment>
     ))}
   </nav>
 )
