@@ -4,6 +4,7 @@ import { db } from '../lib/firebase'
 import { collection, addDoc } from 'firebase/firestore'
 import { useState, useEffect, useRef, Fragment } from 'react'
 import SoundPrompt from '../components/SoundPrompt'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
@@ -96,12 +97,7 @@ export default function DoctorPage({ doctorId } = {}) {
     }
   }, [currentServing?.id, currentDoctorId])
 
-  if (loading) return (
-    <div className="page doctor-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-      <div className="loading-spinner" style={{ marginBottom: 12 }}></div>
-      <p style={{ color: '#64748b', fontSize: 14 }}>Loading...</p>
-    </div>
-  )
+  if (loading) return <LoadingSpinner message="Loading..." />
   if (!doctor) return <div className="page">Doctor not found</div>
 
   return (

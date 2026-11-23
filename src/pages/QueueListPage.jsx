@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { db } from '../lib/firebase'
 import { collection, onSnapshot } from 'firebase/firestore'
 import SoundPrompt from '../components/SoundPrompt'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 const Breadcrumb = ({ items }) => (
   <nav className="breadcrumb">
@@ -34,7 +35,7 @@ export default function QueueListPage() {
     const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
-  const { queues, serving, doctors } = useQueue()
+  const { queues, serving, doctors, loading } = useQueue()
   const isVisibleRef = useRef(true)
   const lastSeenRef = useRef(Date.now())
   const unsubRef = useRef(null)
@@ -202,6 +203,10 @@ export default function QueueListPage() {
     })
     prevServingRef.current = next
   }, [serving, queues, doctors])
+
+  if (loading) {
+    return <LoadingSpinner message="Loading..." />
+  }
 
   return (
     <div className="page queue-list-page full-width">
