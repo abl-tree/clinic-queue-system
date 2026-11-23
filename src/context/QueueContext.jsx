@@ -36,7 +36,7 @@ export function QueueProvider({ children }) {
   useEffect(() => {
     const unsubscribers = doctors.map(doctor => {
       const qRef = collection(db, 'queues', doctor.id, 'patients')
-      const q = query(qRef, where('status', '==', 'waiting'), orderBy('position'))
+      const q = query(qRef, where('status', '==', 'waiting'), where('date', '==', todayKey()), orderBy('position'))
       
       return onSnapshot(q, (snapshot) => {
         const patients = []
@@ -91,7 +91,6 @@ export function QueueProvider({ children }) {
       staffsUnsub()
     }
   }, [])
-
   const getPatientProfile = useCallback(async (hrn) => {
     try {
       const profileRef = doc(db, 'patients', hrn)
@@ -327,6 +326,7 @@ export function QueueProvider({ children }) {
         status: 'waiting',
         position,
         queueNumber,
+        date: todayKey(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       }
@@ -349,7 +349,7 @@ export function QueueProvider({ children }) {
   const serveNext = useCallback(async (doctorId) => {
     try {
       const queueRef = collection(db, 'queues', doctorId, 'patients')
-      const q = query(queueRef, where('status', '==', 'waiting'), orderBy('position'), orderBy('createdAt'))
+      const q = query(queueRef, where('status', '==', 'waiting'), where('date', '==', todayKey()), orderBy('position'), orderBy('createdAt'))
       
       const snapshot = await getDocs(q)
       if (snapshot.empty) return
