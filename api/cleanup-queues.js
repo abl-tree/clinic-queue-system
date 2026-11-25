@@ -1,12 +1,5 @@
 import { db } from './_firebase.js'
 
-const todayKey = () => new Date().toISOString().split('T')[0]
-
-const isPastCleanupHour = () => {
-  const now = new Date()
-  return now.getHours() >= 3
-}
-
 export default async function handler(req, res) {
   // Only allow cron-triggered requests (Vercel sends this header)
   const auth = req.headers.authorization
@@ -14,26 +7,8 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const today = todayKey()
-
-  if (!isPastCleanupHour()) {
-    return res.status(200).json({
-      ok: true,
-      skipped: true,
-      reason: `Not yet 3 AM (current hour: ${new Date().getHours()})`,
-      today
-    })
-  }
-
   try {
-    // Reset queue counter for today to 0
-    const counterRef = db.collection('queueCounters').doc(today)
-    await counterRef.set(
-      { count: 0, date: today, updatedAt: new Date() },
-      { merge: true }
-    )
-
-    // Get all doctors
+    // Delete ALL waiting/serving patients regardless of batch key
     const doctorsSnap = await db.collection('doctors').get()
     const batch = db.batch()
 
@@ -41,26 +16,27 @@ export default async function handler(req, res) {
       const doctorId = docSnap.id
       const oldSnap = await db
         .collection('queues', doctorId, 'patients')
-        .where('status', '==', 'waiting')
-        .where('date', '!=', today)
+        .where('status', 'in', ['waiting', 'serving'])
         .get()
 
       oldSnap.forEach((patientDoc) => {
-        batch.update(patientDoc.ref, {
-          status: 'completed',
-          updatedAt: new Date(),
-          cleanedAt: new Date()
-        })
+        batch.delete(patientDoc.ref)
       })
     }
 
     await batch.commit()
 
+    // Delete serving records for all doctors
+    for (const docSnap of doctorsSnap.docs) {
+      try {
+        await db.collection('serving').doc(docSnap.id).delete()
+      } catch {}
+    }
+
     return res.status(200).json({
       ok: true,
-      today,
       cleaned: true,
-      message: `Queue counter reset and old waiting patients marked completed for ${today}`
+      message: 'All queues deleted'
     })
   } catch (err) {
     console.error('Cleanup error:', err)
