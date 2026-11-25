@@ -9,8 +9,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const patientsSnap = await db.collectionGroup('patients').get()
-    const refs = patientsSnap.docs.map((doc) => doc.ref)
+    const queuesSnap = await db.collection('queues').get()
+    const refs = queuesSnap.docs.map((doc) => doc.ref)
 
     let deleted = 0
     for (let i = 0; i < refs.length; i += BATCH_SIZE) {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       ok: true,
       cleaned: true,
       deleted,
-      message: `Deleted ${deleted} queue entries`
+      message: `Deleted ${deleted} queue documents (patients subcollections untouched)`
     })
   } catch (err) {
     console.error('Cleanup error:', err)
