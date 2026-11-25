@@ -25,6 +25,17 @@ export default async function handler(req, res) {
       deleted += chunk.length
     }
 
+    // Clear currently serving patients across all doctors
+    const servingSnap = await db.collection('serving').get()
+    let servingDeleted = 0
+    for (let i = 0; i < servingSnap.docs.length; i += BATCH_SIZE) {
+      const batch = db.batch()
+      const chunk = servingSnap.docs.slice(i, i + BATCH_SIZE)
+      chunk.forEach((doc) => batch.delete(doc.ref))
+      await batch.commit()
+      servingDeleted += chunk.length
+    }
+
     // Reset queue counter for today so new queues start from 1
     const today = todayKey()
     const counterRef = db.collection('queueCounters').doc(today)
@@ -37,8 +48,9 @@ export default async function handler(req, res) {
       ok: true,
       cleaned: true,
       deleted,
+      servingDeleted,
       today,
-      message: `Deleted ${deleted} queued patients across all doctors; counter reset to 0 (next queue starts from 1)`
+      message: `Deleted ${deleted} queued patients and cleared ${servingDeleted} serving patients across all doctors; counter reset to 0 (next queue starts from 1)`
     })
   } catch (err) {
     console.error('Cleanup error:', err)
