@@ -9,31 +9,25 @@ export default async function handler(req, res) {
   }
 
   try {
+    const patientsSnap = await db.collectionGroup('patients').get()
+    const refs = patientsSnap.docs
+      .map((doc) => doc.ref)
+      .filter((ref) => ref.path.startsWith('queues/'))
+
     let deleted = 0
-
-    const queuesSnap = await db.collection('queues').get()
-
-    for (const docSnap of queuesSnap.docs) {
-      const doctorId = docSnap.id
-      const patientsSnap = await db
-        .collection('queues', doctorId, 'patients')
-        .get()
-
-      const refs = patientsSnap.docs.map((doc) => doc.ref)
-      for (let i = 0; i < refs.length; i += BATCH_SIZE) {
-        const batch = db.batch()
-        const chunk = refs.slice(i, i + BATCH_SIZE)
-        chunk.forEach((ref) => batch.delete(ref))
-        await batch.commit()
-        deleted += chunk.length
-      }
+    for (let i = 0; i < refs.length; i += BATCH_SIZE) {
+      const batch = db.batch()
+      const chunk = refs.slice(i, i + BATCH_SIZE)
+      chunk.forEach((ref) => batch.delete(ref))
+      await batch.commit()
+      deleted += chunk.length
     }
 
     return res.status(200).json({
       ok: true,
       cleaned: true,
       deleted,
-      message: `Deleted ${deleted} queued patients (doctorId documents kept for reuse)`
+      message: `Deleted ${deleted} queued patients across all doctors`
     })
   } catch (err) {
     console.error('Cleanup error:', err)
