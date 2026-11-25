@@ -2,6 +2,8 @@ import { db } from './_firebase.js'
 
 const BATCH_SIZE = 500
 
+const todayKey = () => new Date().toISOString().split('T')[0]
+
 export default async function handler(req, res) {
   const auth = req.headers.authorization
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -23,11 +25,20 @@ export default async function handler(req, res) {
       deleted += chunk.length
     }
 
+    // Reset queue counter for today so new queues start from 1
+    const today = todayKey()
+    const counterRef = db.collection('queueCounters').doc(today)
+    await counterRef.set(
+      { count: 0, date: today, updatedAt: new Date() },
+      { merge: true }
+    )
+
     return res.status(200).json({
       ok: true,
       cleaned: true,
       deleted,
-      message: `Deleted ${deleted} queued patients across all doctors`
+      today,
+      message: `Deleted ${deleted} queued patients across all doctors; counter reset to 0 (next queue starts from 1)`
     })
   } catch (err) {
     console.error('Cleanup error:', err)
