@@ -1,6 +1,8 @@
 import { useState, useEffect, Fragment } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQueue } from '../context/QueueContext'
+import { doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import SearchSelect from '../components/SearchSelect'
 
 export default function StaffPage() {
@@ -29,6 +31,17 @@ export default function StaffPage() {
   const [doctorToClear, setDoctorToClear] = useState(null)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(null)
   const [toast, setToast] = useState(null)
+  const [nextQueueNumber, setNextQueueNumber] = useState(null)
+
+  const todayKey = () => new Date().toISOString().split('T')[0]
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'queueCounters', todayKey()), (snap) => {
+      const count = snap.exists() ? (snap.data().count || 0) : 0
+      setNextQueueNumber(count + 1)
+    })
+    return () => unsubscribe()
+  }, [])
 
   const showToast = (msg) => {
     setToast(msg)
@@ -89,16 +102,20 @@ export default function StaffPage() {
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.hrn.trim()) return
-    addPatient(selectedDoctor, {
+    await addPatient(selectedDoctor, {
       hrn: formData.hrn.trim(),
       name: capitalize(formData.name),
       contact: capitalize(formData.contact),
       reason: capitalize(formData.reason)
     })
     showToast('Patient added to queue')
+    const counterRef = doc(db, 'queueCounters', todayKey())
+    const snap = await getDoc(counterRef)
+    const count = snap.exists() ? (snap.data().count || 0) : 0
+    setNextQueueNumber(count + 1)
     setFormData({ hrn: '', name: '', contact: '', reason: 'Consultation' })
     setPatientFound(false)
   }
@@ -139,6 +156,9 @@ export default function StaffPage() {
       <div className="content-grid">
         <section className="card add-patient-card">
           <h2>Add Patient to Queue</h2>
+          {nextQueueNumber !== null && (
+            <p className="next-queue-hint">Next patient will be assigned queue number #{nextQueueNumber}</p>
+          )}
           <form onSubmit={handleSubmit} className="patient-form">
             <div className="hrn-field">
               <input
@@ -217,19 +237,19 @@ export default function StaffPage() {
                </Fragment>
             )}
           </div>
-          {showClearConfirm && doctorToClear && (
+          {showClearConfirm && (
             <div className="modal-overlay" onClick={() => setShowClearConfirm(false)}>
               <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, width: '90vw' }}>
                 <div className="modal-header">
-                  <h3>Confirm Clear Queue</h3>
+                  <h3>{doctorToClear ? 'Confirm Clear Queue' : 'Confirm Clear All Queues'}</h3>
                   <button className="btn-close" onClick={() => setShowClearConfirm(false)}>×</button>
                 </div>
                 <div className="modal-body">
-                  <p style={{ margin: 0, fontSize: 14 }}>Are you sure you want to clear all patients from this doctor's queue? This cannot be undone.</p>
+                  <p style={{ margin: 0, fontSize: 14 }}>{doctorToClear ? 'Are you sure you want to clear all patients from this doctor\'s queue? This cannot be undone.' : 'Are you sure you want to clear all patients from all doctors\' queues? This cannot be undone.'}</p>
                 </div>
                 <div className="modal-footer">
                   <button type="button" className="btn btn-ghost" onClick={() => setShowClearConfirm(false)}>Cancel</button>
-                  <button type="button" className="btn btn-danger" onClick={() => { if (doctorToClear) { clearQueue(doctorToClear) } else { clearAllQueues() }; setShowClearConfirm(false); setDoctorToClear(null) }} style={{ background: '#dc2626', borderColor: '#dc2626' }}>Clear Queue</button>
+                  <button type="button" className="btn btn-danger" onClick={async () => { if (doctorToClear) { await clearQueue(doctorToClear) } else { await clearAllQueues(); setNextQueueNumber(1) }; setShowClearConfirm(false); setDoctorToClear(null) }} style={{ background: '#dc2626', borderColor: '#dc2626' }}>{doctorToClear ? 'Clear Queue' : 'Clear All Queues'}</button>
                 </div>
               </div>
             </div>

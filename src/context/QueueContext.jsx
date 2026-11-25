@@ -296,7 +296,6 @@ export function QueueProvider({ children }) {
         position = (snapshot.docs[0].data().position || 0) + 1
       }
 
-      // Daily queue counter (resets at midnight)
       const counterRef = doc(db, 'queueCounters', todayKey())
       const counterSnap = await getDoc(counterRef)
       let queueNumber = 1
@@ -587,9 +586,6 @@ export function QueueProvider({ children }) {
       
       await deleteDoc(doc(db, 'serving', doctorId))
 
-      // Reset daily queue counter
-      const counterRef = doc(db, 'queueCounters', todayKey())
-      await setDoc(counterRef, { count: 0, date: todayKey(), updatedAt: serverTimestamp() }, { merge: true })
     } catch (err) {
       console.error('Error clearing queue:', err)
       throw err
@@ -601,6 +597,10 @@ export function QueueProvider({ children }) {
       for (const doctor of doctors) {
         await clearQueue(doctor.id)
       }
+
+      // All queues cleared: reset the shared daily counter so numbering restarts from 1
+      const counterRef = doc(db, 'queueCounters', todayKey())
+      await setDoc(counterRef, { count: 0, date: todayKey(), updatedAt: serverTimestamp() }, { merge: true })
     } catch (err) {
       console.error('Error clearing all queues:', err)
       throw err
