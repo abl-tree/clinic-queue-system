@@ -58,6 +58,7 @@ export function QueueProvider({ children }) {
 
   useEffect(() => {
     if (!batchKey) return
+    const doctorIds = doctors.map(d => d.id).sort().join(',')
     const unsubscribers = doctors.map(doctor => {
       const qRef = collection(db, 'queues', doctor.id, 'patients')
       const q = query(qRef, where('status', '==', 'waiting'), where('batchKey', '==', batchKey), orderBy('position'))
@@ -79,7 +80,7 @@ export function QueueProvider({ children }) {
     return () => {
       unsubscribers.forEach(unsub => unsub())
     }
-  }, [doctors, batchKey])
+  }, [batchKey, doctors.map(d => d.id).sort().join(',')])
 
   useEffect(() => {
     const servingRef = collection(db, 'serving')
@@ -328,6 +329,12 @@ const addPatient = useCallback(async (doctorId, patientData) => {
       const snapshot = await getDocs(q)
       if (!snapshot.empty) {
         position = (snapshot.docs[0].data().position || 0) + 1
+      } else {
+        // No waiting patients in current batch — generate a new batch key
+        const key = newBatchKey()
+        const batchRef = doc(db, 'queueBatch', 'current')
+        await setDoc(batchRef, { key, createdAt: serverTimestamp() }, { merge: true })
+        setBatchKey(key)
       }
 
       const newPatient = {
@@ -579,19 +586,6 @@ const serveNext = useCallback(async (doctorId) => {
         )
       } else {
         await deleteDoc(servingRef)
-        // Check if all queues across all doctors are now empty
-        let allEmpty = true
-        for (const doc of doctors) {
-          const q = query(collection(db, 'queues', doc.id, 'patients'), where('status', '==', 'waiting'), where('batchKey', '==', batchKey))
-          const snap = await getDocs(q)
-          if (!snap.empty) { allEmpty = false; break }
-        }
-        if (allEmpty) {
-          const key = newBatchKey()
-          const batchRef = doc(db, 'queueBatch', 'current')
-          await setDoc(batchRef, { key, createdAt: serverTimestamp() }, { merge: true })
-          setBatchKey(key)
-        }
       }
 
     } catch (err) {
@@ -633,11 +627,6 @@ const clearQueue = useCallback(async (doctorId) => {
       for (const doctor of doctors) {
         await clearQueue(doctor.id)
       }
-      // Generate a new batch key so new queues start fresh
-      const key = newBatchKey()
-      const batchRef = doc(db, 'queueBatch', 'current')
-      await setDoc(batchRef, { key, createdAt: serverTimestamp() }, { merge: true })
-      setBatchKey(key)
     } catch (err) {
       console.error('Error clearing all queues:', err)
       throw err
